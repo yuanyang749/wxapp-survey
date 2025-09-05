@@ -1,85 +1,132 @@
 <!--pages/main/index.wxml-->
-<view class="page {{show?'pageShow':''}}">
-<scroll-view  scroll-y style="height:100vh" bindscroll="scroll" scroll-with-animation='true' enable-back-to-top='true' scroll-top='{{scrollTop}}'>
-  <swiper indicator-dots="{{indicatorDots}}"
-  autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
-    <block wx:for="{{bannerUrls}}" wx:for-index="idx">
-      <swiper-item class='swiper-item'>
-        <view class="slide-image" style="background-image:url({{item}})"></view>
-        <view class="slide-title">{{bannerTxt[idx]}}</view>
-      </swiper-item>
-    </block>
-  </swiper>
-  <view class="name-box {{typeNameFixed?'fixed':''}}">
-    <view bindtap="tab" data-type-name='new' class="type-name {{typeName==='new'?'on':''}}">
-      最新投票
+<view class="page {{!loading?'pageShow':''}}">
+  <!-- 骨架屏加载状态 -->
+  <view wx:if="{{loading}}" class="skeleton-wrapper">
+    <!-- 轮播图骨架屏 -->
+    <view class="banner-skeleton">
+      <view class="skeleton-banner"></view>
     </view>
-    <view bindtap="tab" data-type-name='hot' class="type-name {{typeName==='hot'?'on':''}}">
-      热门投票
-    </view>
-    <view class="realBorder {{typeName}}"></view>
+
+    <!-- 用户状态栏骨架屏 -->
+    <skeleton type="profile" show="{{true}}" animated="{{true}}"></skeleton>
+
+    <!-- 投票列表骨架屏 -->
+    <skeleton type="card" show="{{true}}" rows="{{3}}" animated="{{true}}"></skeleton>
   </view>
-  
-  <view class="select-list {{typeName==='new'?'on':''}}">
-     <block wx:for="{{newSurveyList}}" wx:for-index="idx" wx:for-item="newSurvey">
-      <view class="panel widget-post">
-         <view bindtap="navigator" data-survey-id="{{newSurvey.id}}" class="panel-header">
-              <view style='background-image:url({{newSurveyList_imgs[idx]}})' class="header-img">
-                
-                <view wx:if="{{newSurvey.top==1}}" class="top-item">置顶</view>
+
+  <!-- 主要内容 -->
+  <scroll-view wx:else scroll-y style="height:100vh" bindscroll="onScroll"
+               scroll-with-animation='true' enable-back-to-top='true'
+               scroll-top='{{scrollTop}}' bindscrolltolower="onReachBottom">
+
+    <!-- 轮播图 -->
+    <swiper wx:if="{{bannerUrls.length > 0}}" indicator-dots="{{indicatorDots}}"
+            autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
+      <block wx:for="{{bannerUrls}}" wx:for-index="idx">
+        <swiper-item class='swiper-item'>
+          <view class="slide-image" style="background-image:url({{item}})"></view>
+          <view class="slide-title">{{bannerTxt[idx]}}</view>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <!-- 用户状态栏 -->
+    <view class="user-status-bar">
+      <view wx:if="{{isAuthenticated}}" class="user-info">
+        <image class="user-avatar" src="{{user.profile.avatar_url || '/images/youke.png'}}" mode="aspectFill"></image>
+        <text class="user-name">{{user.profile.nickname || '用户'}}</text>
+        <text class="auth-status">已授权</text>
+      </view>
+      <view wx:else class="auth-prompt">
+        <view class="prompt-content">
+          <image class="prompt-icon" src="/images/icon-sq.png" mode="aspectFit"></image>
+          <view class="prompt-texts">
+            <text class="prompt-title">授权后享受完整功能</text>
+            <text class="prompt-desc">创建投票、参与投票、查看记录</text>
+          </view>
+        </view>
+        <button class="auth-btn" bindtap="onAuthorizeTap">立即授权</button>
+      </view>
+    </view>
+
+    <!-- 标签栏 -->
+    <view class="name-box {{typeNameFixed?'fixed':''}}">
+      <view bindtap="onTabChange" data-type-name='new' class="type-name {{activeTab==='new'?'on':''}}">
+        最新投票
+      </view>
+      <view bindtap="onTabChange" data-type-name='hot' class="type-name {{activeTab==='hot'?'on':''}}">
+        热门投票
+      </view>
+      <view class="realBorder {{activeTab}}"></view>
+    </view>
+
+    <!-- 投票列表 -->
+    <view class="survey-list">
+      <block wx:if="{{surveys.length > 0}}">
+        <block wx:for="{{surveys}}" wx:key="id" wx:for-item="survey">
+          <view class="survey-card" bindtap="onSurveyTap" data-survey="{{survey}}">
+            <!-- 投票封面 -->
+            <view class="survey-cover" style="background-image:url({{survey.cover_image_url || '/images/youke.png'}})">
+              <!-- 置顶标识 -->
+              <view wx:if="{{survey.is_featured}}" class="featured-badge">置顶</view>
+
+              <!-- 访问级别标识 -->
+              <view wx:if="{{survey.access_level === 'authenticated'}}" class="access-badge">
+                <image src="/images/icon-sq.png" class="lock-icon"></image>
               </view>
-              <view class="panel-content">
-                <view class="text"> 
-                    <view  class="text-md">{{newSurvey.title}}</view>
+            </view>
+
+            <!-- 投票信息 -->
+            <view class="survey-info">
+              <view class="survey-title">{{survey.title}}</view>
+              <view wx:if="{{survey.description}}" class="survey-desc">{{survey.description}}</view>
+
+              <!-- 统计信息 -->
+              <view class="survey-stats">
+                <view class="stat-item">
+                  <image src="/images/icon-cyz.png" class="stat-icon"></image>
+                  <text class="stat-text">{{survey.total_votes || 0}}</text>
+                </view>
+                <view class="stat-item">
+                  <image src="/images/icon-part.png" class="stat-icon"></image>
+                  <text class="stat-text">{{survey.total_participants || 0}}人</text>
                 </view>
               </view>
+            </view>
+
+            <!-- 创建者信息 -->
+            <view class="creator-info">
+              <image class="creator-avatar" src="{{survey.creator_avatar || '/images/youke.png'}}" mode="aspectFill"></image>
+              <text class="creator-name">{{survey.creator_name || '匿名用户'}}</text>
+              <text class="create-time">{{survey.created_at}}</text>
+            </view>
           </view>
-          <view class="panel-footer">
-              <view class="pull-right">
-                <image src="{{newSurveyList_users[idx].avatarUrl}}" mode="scaleToFill"></image>
-                 <text>{{newSurveyList_users[idx].nickName}}</text> 
-              </view>
-              <view class="pull-left">
-                <image src="/images/icon-cyz.png" mode="widthFix"></image>
-                <text style="margin-right:16rpx">{{newSurvey.voteNums}}</text>
-              </view>
-          </view>
-      </view>
-    </block>
-  </view>
- 
-  <view class="select-list {{typeName==='hot'?'on':''}}">
-     <block wx:for="{{hotSurveyList}}" wx:for-index="idx" wx:for-item="hotSurvey">
-      <view class="panel widget-post">
-          <view bindtap="navigator" data-survey-id="{{hotSurvey.id}}" class="panel-header">
-              <!-- <image mode="center" src="{{hotSurveyList_imgs[idx]}}" /> -->
-              <view style='background-image:url({{hotSurveyList_imgs[idx]}})' class="header-img">
-                <view wx:if="{{hotSurvey.top==1}}" class="top-item">置顶</view>
-              </view>
-              <view class="panel-content">
-                <view class="text"> 
-                    <view  class="text-md">{{hotSurvey.title}}</view>
-                    <!-- <view class='text-sum'>{{hotSurvey.summary}}</view> -->
-                </view>
-              </view>
-          </view>
-          <view class="panel-footer">
-             
-              <view class="pull-right">
-                <image src="{{hotSurveyList_users[idx].avatarUrl}}" mode="scaleToFill"></image>
-                 <text>{{hotSurveyList_users[idx].nickName}}</text> 
-              </view>
-              <view class="pull-left">
-                <image src="/images/icon-cyz.png" mode="widthFix"></image><text style="margin-right:16rpx">{{hotSurvey.voteNums}}</text>
-              </view>
-              <!-- <view class="text-sm pull-right">{{hotSurvey.createdAt}}</view> -->
-          </view>
-      </view>
-    </block>
-  </view>
-  <view  class="no-more-data">
-      {{noMoreDataTxt}}
-  </view>
-</scroll-view>
-  
+        </block>
+      </block>
+
+      <!-- 空状态 -->
+      <empty-state
+        wx:else
+        show="{{true}}"
+        type="empty"
+        title="暂无投票"
+        description="{{isAuthenticated ? '快去创建第一个投票吧' : '授权后查看更多投票'}}"
+        button-text="{{isAuthenticated ? '创建投票' : '立即授权'}}"
+        show-button="{{true}}"
+        bind:buttonTap="onEmptyButtonTap">
+      </empty-state>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{loadingMore}}" class="loading-more">
+      <view class="loading-spinner small"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 没有更多数据 -->
+    <view wx:elif="{{!hasMore && surveys.length > 0}}" class="no-more-data">
+      <text>没有更多投票了</text>
+    </view>
+
+  </scroll-view>
 </view>

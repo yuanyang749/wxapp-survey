@@ -1,113 +1,345 @@
-.page{background-color: #e5e9f2}
-.survey-add-container{
-  /*padding: 40rpx;*/
-  box-sizing: border-box
+/* 投票创建页面样式 */
+.page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
-#survey-title{
-  border-bottom: 2rpx solid #d2d2d2;
-  box-sizing: border-box;
-  font-size: 40rpx;
-  margin-bottom: 30rpx;
-  padding: 16rpx 0;
-  height: 100rpx;
-  width:670rpx;
-}
-#survey-summary{
-  border: 2rpx solid #d2d2d2;
-  box-sizing: border-box;
-  width:670rpx;
-  padding: 10rpx;
-  font-size: 32rpx;
-  border-radius: 6rpx;
-  color: #999
-}
-.select-list{
-  font-size:30rpx;
-  box-sizing: border-box;
-  padding:40rpx;
-  background-color: #fff
-}
-.select-list .select-row.summary{
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff;
 }
-.select-list .summary-tips{
-  margin-top: 10rpx;
+
+.loading-spinner {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #5f1971;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  color: #666;
   font-size: 28rpx;
-  color: #e64340;
-  margin-right: 10rpx;
 }
-.select-list.top,.select-list.middle{
-  margin-bottom: 10rpx;
+
+/* 内容容器 */
+.content-container {
+  padding-bottom: 120rpx;
 }
-.select-list .select-row{
+
+/* 错误提示 */
+.error-toast {
+  position: fixed;
+  top: 100rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4757;
+  color: #fff;
+  padding: 20rpx 40rpx;
+  border-radius: 40rpx;
+  z-index: 1000;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.error-text {
+  font-size: 28rpx;
+}
+/* 表单区域 */
+.form-section {
+  background-color: #fff;
+  margin: 20rpx;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 40rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 40rpx;
+}
+
+.item-label {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.item-input {
+  width: 100%;
+  padding: 24rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  color: #333;
+  background-color: #fafafa;
+}
+
+.item-input:focus {
+  border-color: #5f1971;
+  background-color: #fff;
+}
+
+.item-textarea {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 24rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  color: #333;
+  background-color: #fafafa;
+}
+
+.item-textarea:focus {
+  border-color: #5f1971;
+  background-color: #fff;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
+
+/* 选项管理 */
+.options-container {
+  margin-top: 20rpx;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 20rpx;
+  background-color: #fafafa;
+  border-radius: 12rpx;
+  border: 2rpx solid #e0e0e0;
+}
+
+.option-number {
+  width: 60rpx;
+  height: 60rpx;
+  background-color: #5f1971;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.option-input {
+  flex: 1;
+  padding: 16rpx;
+  border: none;
+  background-color: transparent;
+  font-size: 32rpx;
+  color: #333;
+}
+
+.option-delete {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20rpx;
+  flex-shrink: 0;
+}
+
+.delete-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.add-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx;
+  border: 2rpx dashed #ccc;
+  border-radius: 12rpx;
+  margin-top: 20rpx;
+}
+
+.add-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 16rpx;
+}
+
+.add-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 封面图片 */
+.upload-cover-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx;
+  border: 2rpx dashed #ccc;
+  border-radius: 12rpx;
+  background-color: #fafafa;
+}
+
+.upload-icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 20rpx;
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.cover-preview {
+  position: relative;
+}
+
+.cover-image {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 12rpx;
+}
+
+.cover-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.action-btn {
+  padding: 16rpx 32rpx;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  border: 2rpx solid #5f1971;
+  color: #5f1971;
+  background-color: transparent;
+}
+
+.action-btn.delete {
+  border-color: #ff4757;
+  color: #ff4757;
+}
+
+.action-btn::after {
+  border: none;
+}
+
+/* 设置项 */
+.setting-item {
+  margin-bottom: 40rpx;
+}
+
+.setting-label {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30rpx;
+}
+
+.radio-item {
   display: flex;
   align-items: center;
 }
-.select-list .select-row .select-icon{
-  border-radius: 100%;
-  width:48rpx;
-  height: 48rpx;
-  color: #fff;
-  text-align: center;
-  line-height: 48rpx;
-  margin-right: 20rpx;
-  font-size: 24rpx
+
+.radio-text {
+  margin-left: 12rpx;
+  font-size: 30rpx;
+  color: #333;
 }
-.select-list .select-row .select-icon.del{
-  background-color: #e64340;
-}
-.select-list .select-row .select-icon.del.disable{
-  background-color: #666
-}
-.select-list .select-row input{
-  border-bottom: 2rpx solid #d2d2d2;
-  box-sizing: border-box;
-  margin-bottom: 20rpx;
-  height: 90rpx;
-  flex: 1
-}
-.select-list .select-row .select-icon.add{
-  background-color: #5f1971;
-  margin-bottom: 40rpx
-}
-.select-list .select-row .add-txt{
-  color: #5f1971;
-  margin-bottom: 40rpx
-}
-.select-list .preview-imgs{
+
+.datetime-picker {
   display: flex;
-  /*justify-content: space-between;*/
-  
+  gap: 20rpx;
 }
-.select-list .preview-imgs image{
-  background: #ddd;
-  width: 216rpx;
-  height:216rpx;
-  border-radius:6rpx;
-  margin-right: 21rpx; 
+
+.picker-display {
+  padding: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  font-size: 30rpx;
+  color: #333;
+  background-color: #fafafa;
+  min-width: 200rpx;
+  text-align: center;
 }
-.select-list .preview-imgs image:last-child{
-  margin-right: 0;
+
+/* 提交按钮 */
+.submit-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30rpx;
+  background-color: #fff;
+  border-top: 1rpx solid #e0e0e0;
 }
-.select-list.bottom .select-row {
-  justify-content: space-between;
-  /*margin-bottom: 40rpx;*/
-  border-bottom: 2rpx solid #d2d2d2;
-  padding: 30rpx 0;
+
+.submit-btn {
+  width: 100%;
+  background-color: #5f1971;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 600;
+  border-radius: 50rpx;
+  padding: 30rpx;
+  border: none;
+  transition: all 0.3s ease;
 }
-.select-list.bottom .radio-group .radio{
-  height: 70rpx;
-  line-height: 70rpx;
-  display: inline-block;
+
+.submit-btn.submitting {
+  background-color: #ccc;
 }
-.select-list.bottom .radio-group .radio radio{
-  margin:0 10rpx;
-  
-}
-.select-list.bottom .picker-row{
-  display: flex
-}
-.select-list.bottom .picker{
-  margin-right: 20rpx
+
+.submit-btn::after {
+  border: none;
 }

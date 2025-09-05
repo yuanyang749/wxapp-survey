@@ -1,4 +1,10 @@
 {
-  "navigationBarTitleText": "首页",
-  "enablePullDownRefresh": false
+  "navigationBarTitleText": "投票广场",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 50,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "skeleton": "/components/skeleton/skeleton",
+    "empty-state": "/components/empty-state/empty-state"
+  }
 }

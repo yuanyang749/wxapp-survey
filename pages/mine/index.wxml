@@ -1,31 +1,96 @@
-<!--pages/mine/index.wxml-->
+<!--个人中心页面-->
 <view class="page {{show?'pageShow':''}}">
-    <!-- <view class="mine-top">
-        <view class="user-photo">
-            <image src="{{userInfo===''?'/images/youke.png':userInfo.avatarUrl}}"></image>
-            <text>{{userInfo===''?'游客':userInfo.nickName}}</text>
-            <view class="survey-total">创建投票总数：<text>{{surveyCount}}</text></view>
+  <!-- 骨架屏加载状态 -->
+  <view wx:if="{{loading}}" class="skeleton-wrapper">
+    <!-- 用户信息骨架屏 -->
+    <skeleton type="profile" show="{{true}}" animated="{{true}}"></skeleton>
+
+    <!-- 功能菜单骨架屏 -->
+    <skeleton type="list" show="{{true}}" rows="{{4}}" animated="{{true}}"></skeleton>
+  </view>
+
+  <!-- 主要内容 -->
+  <scroll-view wx:else scroll-y style="height:100vh" class="content-container">
+
+    <!-- 用户信息卡片 -->
+    <view class="user-card">
+      <view wx:if="{{isAuthenticated}}" class="user-info">
+        <image class="user-avatar" src="{{user.profile.avatar_url || '/images/youke.png'}}" mode="aspectFill"></image>
+        <view class="user-details">
+          <text class="user-name">{{user.profile.nickname || '用户'}}</text>
+          <text class="user-status">已授权用户</text>
         </view>
-    </view>  -->
-    <view class="height" style="margin-top:100rpx;"></view>
-    <view class="mine-container">
-       <view class="list">
-          <view bindtap="create" class="mine-item">
-            <image src="/images/icon-add3.png"></image>
-            <text>创建的投票</text> 
-            <image src="/images/icon-arrow.png"></image>
-          </view>
-          <view bindtap="part" class="mine-item">
-            <image src="/images/icon-part.png"></image>
-            <text>参与的投票</text> 
-            <image src="/images/icon-arrow.png"></image>
-          </view>
-          <view bindtap="about" class="mine-item">
-            <image src="/images/icon-about2.png"></image>
-            <text>关于</text> 
-            <image src="/images/icon-arrow.png"></image>
-          </view>
-       </view>
+      </view>
+
+      <view wx:else class="auth-prompt">
+        <image class="prompt-avatar" src="/images/youke.png" mode="aspectFill"></image>
+        <view class="prompt-details">
+          <text class="prompt-title">未授权用户</text>
+          <text class="prompt-desc">授权后享受完整功能</text>
+        </view>
+        <button class="auth-btn" bindtap="onAuthorizeTap">立即授权</button>
+      </view>
     </view>
-    <view class="height"></view>
+
+    <!-- 统计数据 -->
+    <view wx:if="{{isAuthenticated}}" class="stats-card">
+      <view class="stats-title">我的数据</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-number">{{surveyStats.totalSurveys}}</text>
+          <text class="stat-label">创建投票</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{surveyStats.activeSurveys}}</text>
+          <text class="stat-label">进行中</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{surveyStats.totalVotes}}</text>
+          <text class="stat-label">总票数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{surveyStats.totalParticipants}}</text>
+          <text class="stat-label">参与人数</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能菜单 -->
+    <view class="menu-card">
+      <view class="menu-list">
+        <view class="menu-item" bindtap="navigateToMySurveys">
+          <view class="menu-icon">
+            <image src="/images/icon-add3.png" class="icon"></image>
+          </view>
+          <text class="menu-text">我创建的投票</text>
+          <image src="/images/icon-arrow.png" class="arrow-icon"></image>
+        </view>
+
+        <view class="menu-item" bindtap="navigateToParticipation">
+          <view class="menu-icon">
+            <image src="/images/icon-part.png" class="icon"></image>
+          </view>
+          <text class="menu-text">我参与的投票</text>
+          <image src="/images/icon-arrow.png" class="arrow-icon"></image>
+        </view>
+
+        <view class="menu-item" bindtap="navigateToCreate">
+          <view class="menu-icon">
+            <image src="/images/icon-add3.png" class="icon"></image>
+          </view>
+          <text class="menu-text">创建新投票</text>
+          <image src="/images/icon-arrow.png" class="arrow-icon"></image>
+        </view>
+
+        <view class="menu-item" bindtap="navigateToAbout">
+          <view class="menu-icon">
+            <image src="/images/icon-about2.png" class="icon"></image>
+          </view>
+          <text class="menu-text">关于我们</text>
+          <image src="/images/icon-arrow.png" class="arrow-icon"></image>
+        </view>
+      </view>
+    </view>
+
+  </scroll-view>
 </view>

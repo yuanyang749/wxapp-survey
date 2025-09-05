@@ -1,70 +1,167 @@
-<!--index.wxml-->
-<view class="page {{show?'pageShow':''}}">
-<form bindsubmit="formSubmit">
-  <view class="survey-add-container">
-    <view class="error-tips {{errTipShow?'active':''}}">{{errTxt}}</view>
-    <view class="select-list top">
-      <view class="select-row">
-        <input name="title" id="survey-title" placeholder="投票标题" maxlength="25" type="text" />
+<!--投票创建页面-->
+<view class="page {{!loading?'pageShow':''}}">
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">初始化中...</text>
+  </view>
+
+  <!-- 主要内容 -->
+  <scroll-view wx:else scroll-y style="height:100vh" class="content-container">
+
+    <!-- 错误提示 -->
+    <view wx:if="{{showError}}" class="error-toast">
+      <text class="error-text">{{errorMessage}}</text>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="form-section">
+      <view class="section-title">基本信息</view>
+
+      <view class="form-item">
+        <view class="item-label">投票标题 *</view>
+        <input
+          class="item-input"
+          placeholder="请输入投票标题"
+          maxlength="100"
+          value="{{title}}"
+          bindinput="onTitleInput" />
       </view>
-      <view class="select-row summary">
-        <textarea wx:if="{{show}}" name="summary" id="survey-summary" maxlength="200" placeholder="补充描述（选填）" ></textarea>
-        <view class="summary-tips">200字以内</view>
+
+      <view class="form-item">
+        <view class="item-label">投票描述</view>
+        <textarea
+          class="item-textarea"
+          placeholder="请输入投票描述（选填）"
+          maxlength="500"
+          value="{{description}}"
+          bindinput="onDescriptionInput" />
+        <view class="char-count">{{description.length}}/500</view>
       </view>
     </view>
-    <view class="select-list middle">
-        <view wx:for="{{inputArr}}" class="select-row">
-          <view data-idx="{{index}}" data-id="" catchtap="delInput" class="select-icon del {{inputArr.length <=2 ? 'disable':''}}">-</view>
-          <input name="answer{{index}}" type="text" placeholder="选项描述" />
+    <!-- 投票选项 -->
+    <view class="form-section">
+      <view class="section-title">投票选项</view>
+
+      <view class="options-container">
+        <block wx:for="{{options}}" wx:key="order" wx:for-index="index">
+          <view class="option-item">
+            <view class="option-number">{{index + 1}}</view>
+            <input
+              class="option-input"
+              placeholder="请输入选项内容"
+              maxlength="100"
+              value="{{item.text}}"
+              data-index="{{index}}"
+              bindinput="onOptionInput" />
+            <view
+              wx:if="{{options.length > minOptions}}"
+              class="option-delete"
+              data-index="{{index}}"
+              bindtap="deleteOption">
+              <image src="/images/icon-del.png" class="delete-icon"></image>
+            </view>
+          </view>
+        </block>
+
+        <view
+          wx:if="{{options.length < maxOptions}}"
+          class="add-option-btn"
+          bindtap="addOption">
+          <image src="/images/icon-add3.png" class="add-icon"></image>
+          <text class="add-text">添加选项（{{minOptions}}-{{maxOptions}}项）</text>
         </view>
-        
-        <view bindtap="addInput" style="margin-top:20rpx" class="select-row" >
-          <view class="select-icon add">+</view>
-          <view  class="add-txt" >添加选项（2-10项）</view>
-        </view>
-        <view catchtap="chooseImage" class="select-row">
-          <view class="select-icon add">+</view>
-          <view class="add-txt" >添加图片（最多3张）</view>
-        </view>
-        <view  class="select-row preview-imgs">
-            <image data-idx="{{index}}" bindtap="previewImage" wx:for="{{uploadImgs}}" mode="aspectFill" src="{{item}}"></image>
-        </view>
+      </view>
     </view>
-    <view class="select-list bottom">
-      <view  class="select-row">
-        <label>匿名投票</label>
-        <switch name="isAnonymity" id="anonym-switch" color="#5f1971" checked='{{false}}'/>
+
+    <!-- 封面图片 -->
+    <view class="form-section">
+      <view class="section-title">封面图片</view>
+
+      <view wx:if="{{!coverImage}}" class="upload-cover-btn" bindtap="chooseCoverImage">
+        <image src="/images/icon-add3.png" class="upload-icon"></image>
+        <text class="upload-text">添加封面图片（选填）</text>
       </view>
-       <view  class="select-row">
-        <label>公开投票</label>
-        <switch name="open" id="open-switch" color="#5f1971" checked='{{false}}'/>
+
+      <view wx:else class="cover-preview">
+        <image
+          src="{{coverImage}}"
+          mode="aspectFill"
+          class="cover-image"
+          bindtap="previewCoverImage" />
+        <view class="cover-actions">
+          <button class="action-btn" bindtap="chooseCoverImage">更换</button>
+          <button class="action-btn delete" bindtap="deleteCoverImage">删除</button>
+        </view>
       </view>
-      <view class="select-row">
-        <label>投票类型</label>
-        <radio-group name="type" class="radio-group" >
-            <label class="radio">单选<radio color="#5f1971" value="0" /></label>
-            <label class="radio">多选<radio color="#5f1971" value="1" /></label>
-          </radio-group>
+    </view>
+    <!-- 投票设置 -->
+    <view class="form-section">
+      <view class="section-title">投票设置</view>
+
+      <view class="setting-item">
+        <view class="setting-label">投票类型</view>
+        <radio-group class="radio-group" bindchange="onSurveyTypeChange">
+          <label class="radio-item">
+            <radio value="single_choice" checked="{{surveyType === 'single_choice'}}" color="#5f1971" />
+            <text class="radio-text">单选</text>
+          </label>
+          <label class="radio-item">
+            <radio value="multiple_choice" checked="{{surveyType === 'multiple_choice'}}" color="#5f1971" />
+            <text class="radio-text">多选</text>
+          </label>
+        </radio-group>
       </view>
-      
-      <view class="select-row" style="border-bottom:none">
-        <label>截止日期</label>
-        <view class="picker-row">
-            <picker name="date1" mode="date" value="{{Deadline}}" start="{{startDay}}"  end="{{endDay}}" bindchange="bindDateChange">
-              <view class="picker">
-                {{Deadline}}
-              </view>
-            </picker>
-            <picker name="date2" mode="time" value="{{time}}" start="00:00" end="23:59" bindchange="bindTimeChange">
-              <view class="picker">
-                {{time}}
-              </view>
+
+      <view class="setting-item">
+        <view class="setting-label">访问权限</view>
+        <radio-group class="radio-group" bindchange="onAccessLevelChange">
+          <label class="radio-item">
+            <radio value="public" checked="{{accessLevel === 'public'}}" color="#5f1971" />
+            <text class="radio-text">完全公开</text>
+          </label>
+          <label class="radio-item">
+            <radio value="authenticated" checked="{{accessLevel === 'authenticated'}}" color="#5f1971" />
+            <text class="radio-text">登录可见</text>
+          </label>
+          <label class="radio-item">
+            <radio value="owner_only" checked="{{accessLevel === 'owner_only'}}" color="#5f1971" />
+            <text class="radio-text">仅自己</text>
+          </label>
+        </radio-group>
+      </view>
+
+      <view class="setting-item">
+        <view class="setting-label">截止时间</view>
+        <view class="datetime-picker">
+          <picker
+            mode="date"
+            value="{{endTime}}"
+            start="{{currentDate}}"
+            end="{{maxDate}}"
+            bindchange="onDateChange">
+            <view class="picker-display">{{endTime || '选择日期'}}</view>
+          </picker>
+          <picker
+            mode="time"
+            value="{{currentTime}}"
+            bindchange="onTimeChange">
+            <view class="picker-display">{{currentTime}}</view>
           </picker>
         </view>
-        
       </view>
-      <button formType="submit" disabled="{{btnDisabled}}" type="default" loading="{{btnLoad}}" class="submit-btn">提交</button>
     </view>
-  </view>
-</form>
+
+    <!-- 提交按钮 -->
+    <view class="submit-container">
+      <button
+        class="submit-btn {{submitting ? 'submitting' : ''}}"
+        bindtap="onSubmit"
+        disabled="{{submitting}}">
+        <text wx:if="{{submitting}}">发布中...</text>
+        <text wx:else>发布投票</text>
+      </button>
+    </view>
+
+  </scroll-view>
 </view>

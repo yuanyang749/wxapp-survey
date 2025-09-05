@@ -1,0 +1,31 @@
+<!--消息提示组件-->
+<view wx:if="{{visible}}" class="message-toast-overlay">
+  <view 
+    class="{{getContainerClass()}}"
+    animation="{{animationData}}"
+    style="{{!animationData ? getInitialStyle() : ''}}">
+    
+    <!-- 图标 -->
+    <image 
+      wx:if="{{showIcon}}"
+      class="message-icon"
+      src="{{getIconSrc()}}"
+      mode="aspectFit">
+    </image>
+    
+    <!-- 消息内容 -->
+    <text class="message-text">{{message}}</text>
+    
+    <!-- 关闭按钮 -->
+    <view 
+      wx:if="{{closable}}"
+      class="message-close"
+      bindtap="onCloseTap">
+      <image 
+        class="close-icon"
+        src="/images/icon-del.png"
+        mode="aspectFit">
+      </image>
+    </view>
+  </view>
+</view>

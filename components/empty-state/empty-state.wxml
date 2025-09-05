@@ -1,0 +1,30 @@
+<!--空状态组件-->
+<view wx:if="{{show}}" class="empty-state {{type}}">
+  <view class="empty-content">
+    <!-- 图标 -->
+    <view class="empty-icon-wrapper">
+      <image 
+        class="{{getIconClass()}}" 
+        src="{{currentConfig.icon}}" 
+        mode="aspectFit">
+      </image>
+    </view>
+    
+    <!-- 标题 -->
+    <view wx:if="{{currentConfig.title}}" class="empty-title">
+      {{currentConfig.title}}
+    </view>
+    
+    <!-- 描述 -->
+    <view wx:if="{{currentConfig.description}}" class="empty-description">
+      {{currentConfig.description}}
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view wx:if="{{showButton && buttonText}}" class="empty-button-wrapper">
+      <button class="empty-button" bindtap="onButtonTap">
+        {{buttonText}}
+      </button>
+    </view>
+  </view>
+</view>

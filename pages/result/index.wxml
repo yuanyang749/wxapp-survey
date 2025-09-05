@@ -1,86 +1,154 @@
-<!--pages/result/index.wxml-->
-<view class="page {{show?'pageShow':''}}">
-  <form bindsubmit="formSubmit">
-      <view class="error-tips {{errTipShow?'active':''}}">{{errTxt}}</view>
-      <view class="result-container">
-          <view class="title">
-              {{surveyInfo.title}}
-              <label>[{{surveyInfo.type==='0'?'单选':'多选'}}]</label>
-          </view>
-          <view class="summary">简介：{{surveyInfo.summary}}</view>
-          <view wx:if="{{uploadImgs}}"  class="preview-imgs">
-              <image data-idx="{{index}}" bindtap="previewImage" wx:for="{{uploadImgs}}" mode="aspectFill" src="{{item}}"></image>
-            
-          </view>
-          <view class="select-list">
-              <view class="select-row">
-              <radio-group wx:if="{{surveyInfo.type==='0'}}"  name="answerId"  >
-                  <block wx:for="{{answerList}}" wx:for-item="answer" wx:for-index ="answerIndex"> 
-                      <label  class="radio">
-                          <radio  color="#5f1971" value="{{answer.objectId}}" />
-                          <view class="answer-box">
-                              <view class="answer-row">
-                                  <text class="answer-txt">{{answer.text}}</text>
-                                  <view class="answer-peoples">
-                                      <label>{{answer.voteUsers.length}}</label>票
-                                  </view>
-                                  <text class="answer-percent">{{percentArr[answerIndex]}}%</text>
-                              </view>
-                              <progress color="#5f1971" stroke-width="1" percent="{{percentArr[answerIndex]}}" active />
-                          </view>
-                      </label>
-                      <view class="participant-box">
-                          <view wx:if="{{index===0|hideAvatarList[answerIndex]}}"  wx:for="{{avatarUrls[answerIndex]}}" class="participant">
-                              <image  src="{{item.avatarUrl==null||item.avatarUrl===''?'/images/youke.png':item.avatarUrl}}"></image>
-                              <text >{{item.nickName==null||item.nickName===''?'游客':item.nickName}}</text>
-                          </view>
-                          
-                          <view wx:if="{{answer.voteUsers.length>showAvatarNums&&hideAvatarList[answerIndex]}}" class="participant elliptic-sentences"><text>...</text></view>
-                          <view wx:if="{{avatarUrls[answerIndex].length>0}}" data-idx = "{{answerIndex}}" bindtap="showAvatar" class="participant icon-more">
-                              <image wx:if="{{answer.voteUsers.length>1}}" src="{{hideAvatarList[answerIndex]?'/images/icon-sq.png':'/images/icon-more.png'}}"></image>
-                          </view>
-                      </view>
-                  </block>
-              </radio-group>
-              <checkbox-group wx:if="{{surveyInfo.type==='1'}}"  name="answerId" >
-                  <block wx:for="{{answerList}}" wx:for-item="answer" wx:for-index ="answerIndex"> 
-                      <label  class="checkbox">
-                          <checkbox  color="#5f1971" value="{{answer.objectId}}" />
-                          <view class="answer-box">
-                              <view class="answer-row">
-                                  <text class="answer-txt">{{answer.text}}</text>
-                                  <view class="answer-peoples">
-                                      <label>{{answer.voteUsers.length}}</label>票
-                                  </view>
-                                  <text class="answer-percent">{{percentArr[answerIndex]}}%</text>
-                              </view>
-                              <progress color="#5f1971" stroke-width="1" percent="{{percentArr[answerIndex]}}" active />
-                          </view>
-                      </label>
-                      <view class="participant-box">
-                          <view wx:if="{{index===0|hideAvatarList[answerIndex]}}"  wx:for="{{avatarUrls[answerIndex]}}" class="participant">
-                              <image  src="{{item.avatarUrl==null||item.avatarUrl===''?'/images/youke.png':item.avatarUrl}}"></image>
-                              <text >{{item.nickName==null||item.nickName===''?'游客':item.nickName}}</text>
-                          </view>
-                          
-                          <view wx:if="{{answer.voteUsers.length>showAvatarNums&&hideAvatarList[answerIndex]}}" class="participant elliptic-sentences"><text>...</text></view>
-                          <view wx:if="{{avatarUrls[answerIndex].length>0}}" data-idx = "{{answerIndex}}" bindtap="showAvatar" class="participant icon-more">
-                              <image wx:if="{{answer.voteUsers.length>1}}" src="{{hideAvatarList[answerIndex]?'/images/icon-sq.png':'/images/icon-more.png'}}"></image>
-                          </view>
-                      </view>
-                  </block>
-              </checkbox-group>
-            
-              </view>
-          </view>
-          <button style="margin-bottom:20rpx" formType="submit" disabled="{{btnDisabled}}" type="default" loading="{{btnLoad}}" class="submit-btn">{{isEnd?'投票结束':'投票'}}<text wx:if="{{isEnd}}" class="end-date">{{' ('+surveyInfo.date1+' '+surveyInfo.date2+')'}}</text></button>
-          <view class="re-bottom">
-            <view bindtap="openIndex" class="toIndex">我来<text>创建</text></view>
-            <view class="share">
-              <button  open-type="share">分享</button>
-            </view>
-          </view>
-          
+<!--投票结果页面-->
+<view class="page {{!loading?'pageShow':''}}">
+  <!-- 骨架屏加载状态 -->
+  <view wx:if="{{loading}}" class="skeleton-wrapper">
+    <!-- 投票信息骨架屏 -->
+    <skeleton type="card" show="{{true}}" rows="{{1}}" animated="{{true}}"></skeleton>
+
+    <!-- 投票选项骨架屏 -->
+    <skeleton type="list" show="{{true}}" rows="{{4}}" animated="{{true}}"></skeleton>
+  </view>
+
+  <!-- 主要内容 -->
+  <scroll-view wx:else scroll-y style="height:100vh" bindscrolltolower="onPullDownRefresh">
+
+    <!-- 错误提示 -->
+    <view wx:if="{{showError}}" class="error-toast">
+      <text class="error-text">{{errorMessage}}</text>
+    </view>
+
+    <!-- 投票信息 -->
+    <view class="survey-header">
+      <view class="survey-title">{{survey.title}}</view>
+      <view class="survey-meta">
+        <text class="survey-type">[{{survey.survey_type === 'single_choice' ? '单选' : '多选'}}]</text>
+        <text class="survey-status" wx:if="{{isExpired}}">已结束</text>
+        <text class="survey-status active" wx:else>进行中</text>
       </view>
-  </form>
+      <view wx:if="{{survey.description}}" class="survey-desc">{{survey.description}}</view>
+
+      <!-- 封面图片 -->
+      <view wx:if="{{survey.cover_image_url}}" class="survey-cover">
+        <image src="{{survey.cover_image_url}}" mode="aspectFill" class="cover-image"></image>
+      </view>
+
+      <!-- 统计信息 -->
+      <view class="survey-stats">
+        <view class="stat-item">
+          <text class="stat-number">{{totalVotes}}</text>
+          <text class="stat-label">总票数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{totalParticipants}}</text>
+          <text class="stat-label">参与人数</text>
+        </view>
+      </view>
+    </view>
+    <!-- 投票选项 -->
+    <view class="options-container">
+      <!-- 未参与时显示投票界面 -->
+      <view wx:if="{{!hasParticipated && canParticipate}}" class="voting-section">
+        <view class="section-title">请选择您的选项</view>
+
+        <view class="options-list">
+          <block wx:for="{{options}}" wx:key="id" wx:for-item="option">
+            <view class="option-item {{userSelections.indexOf(option.id) > -1 ? 'selected' : ''}}"
+                  data-option-id="{{option.id}}"
+                  bindtap="onOptionSelect">
+
+              <!-- 选择指示器 -->
+              <view class="option-indicator">
+                <view wx:if="{{survey.survey_type === 'single_choice'}}"
+                      class="radio-indicator {{userSelections.indexOf(option.id) > -1 ? 'checked' : ''}}">
+                </view>
+                <view wx:else
+                      class="checkbox-indicator {{userSelections.indexOf(option.id) > -1 ? 'checked' : ''}}">
+                  <image wx:if="{{userSelections.indexOf(option.id) > -1}}"
+                         src="/images/icon-sq.png"
+                         class="check-icon"></image>
+                </view>
+              </view>
+
+              <!-- 选项内容 -->
+              <view class="option-content">
+                <text class="option-text">{{option.option_text}}</text>
+              </view>
+            </view>
+          </block>
+        </view>
+
+        <!-- 提交按钮 -->
+        <view class="submit-section">
+          <button class="submit-btn {{submitting ? 'submitting' : ''}}"
+                  bindtap="onSubmitVote"
+                  disabled="{{submitting || userSelections.length === 0}}">
+            <text wx:if="{{submitting}}">提交中...</text>
+            <text wx:else>提交投票</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 无法参与时的提示 -->
+      <view wx:elif="{{!canParticipate}}" class="cannot-participate">
+        <view class="tip-icon">
+          <image src="/images/icon-more.png" class="info-icon"></image>
+        </view>
+        <view class="tip-content">
+          <text wx:if="{{!isAuthenticated}}" class="tip-text">需要授权后才能参与投票</text>
+          <text wx:elif="{{hasParticipated}}" class="tip-text">您已经参与过此投票</text>
+          <text wx:elif="{{isExpired}}" class="tip-text">投票已结束</text>
+          <text wx:else class="tip-text">暂时无法参与此投票</text>
+        </view>
+        <button wx:if="{{!isAuthenticated}}"
+                class="auth-btn"
+                bindtap="onAuthorizeTap">
+          立即授权
+        </button>
+      </view>
+
+      <!-- 结果展示 -->
+      <view wx:if="{{hasParticipated || showResults}}" class="results-section">
+        <view class="section-header">
+          <text class="section-title">投票结果</text>
+          <button class="toggle-btn" bindtap="onToggleResults">
+            {{showResults ? '隐藏结果' : '显示结果'}}
+          </button>
+        </view>
+
+        <view wx:if="{{showResults}}" class="results-list">
+          <block wx:for="{{options}}" wx:key="id" wx:for-item="option">
+            <view class="result-item">
+              <view class="result-header">
+                <text class="result-text">{{option.option_text}}</text>
+                <view class="result-stats">
+                  <text class="vote-count">{{option.vote_count || 0}}票</text>
+                  <text class="vote-percent">{{option.percentage || 0}}%</text>
+                </view>
+              </view>
+
+              <!-- 进度条 -->
+              <view class="progress-container">
+                <view class="progress-bar">
+                  <view class="progress-fill"
+                        style="width: {{option.percentage || 0}}%">
+                  </view>
+                </view>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-section">
+      <button class="action-btn secondary" bindtap="onToggleResults">
+        {{showResults ? '隐藏结果' : '查看结果'}}
+      </button>
+      <button class="action-btn primary" bindtap="navigateToCreate">
+        创建投票
+      </button>
+    </view>
+
+  </scroll-view>
 </view>

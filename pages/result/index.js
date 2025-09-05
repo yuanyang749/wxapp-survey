@@ -1,394 +1,352 @@
-const {AV,util} = require('../../utils/common.js');
-const app = getApp();
+/**
+ * 投票结果页面
+ * 支持投票参与和结果展示
+ */
+
+import hybridAuthService from '../../services/HybridAuthService.js'
+import surveyService from '../../services/SurveyService.js'
+import NavigationHelper from '../../utils/NavigationHelper.js'
+import { APP_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config/app.js'
+
 Page({
-  data:{
-    surveyInfo:null,
-    answerList:null,
-    totalVotes:0,
-    percentArr:null,
-    uploadImgs:null,
-    errTipShow:false,
-    errTxt:'',
-    // btnTxt:'',
-    hasSubmit:null,
-    btnLoad:false,
-    btnDisabled:false,
-    isEnd:false,
-    showAvatarNums:5,
-    // pageShow:app.globalData.pageShow
-  },
-  onLoad:function(options){
-    // 页面初始化 options为页面跳转所带来的参数
-    this.setData({ 
-      surveyId:options.surveyId 
-      //surveyId:"5933d608a0bb9f0058d9003a"
-      });
-    util.wxlogin(app,this.init);
-  },
-  onReady:function(){
-    // 页面渲染完成
-    // this.init();
-  },
-  onShow:function(){
-    // 页面显示
-   
-  },
-  onHide:function(){
-    // 页面隐藏
-  },
-  onUnload:function(){
-    // 页面关闭
-  },
-  init(){
-    this.getSurvey();
-  },
-  getSurvey(){
-    let currPage = this;
-    // const surveyId = currPage.data.surveyId;
-    let {surveyId} = currPage.data;
-    if(surveyId){
-      const cql = `select title,summary,type,isAnonymity,imgIds,date1,date2  from survey where objectId ='${surveyId}'`;
-    AV.Query.doCloudQuery(cql).then(function (data) {
-      // results 即为查询结果，它是一个 AV.Object 数组
-      const surveyInfo = data.results[0];
-      currPage.setData({surveyInfo});
-      currPage.compareTime();
-      currPage.watchIsDateEnd();
-      currPage.setUploadImgs();
-      currPage.getAnswers();
-      
-    }, function (error) {
+  data: {
+    // 投票信息
+    survey: null,
+    options: [],
+    surveyId: null,
 
-    });
-    }
-    
-  },
-  //判断投票是否到了截止日期
-  compareTime(){
-    let attr = this.data.surveyInfo;
-    if (attr!=null){
-      let { date1, date2 } = attr['attributes'];
-      let endDay = date1 + " " + date2;
-      let today = new Date();
-      today = util.formatDay(today, '-') + ' ' + util.formatTime(today, ':');
-      if (today >= endDay) {
-        this.setData({ isEnd: true, btnDisabled: true });
-      }
-    }
-    
-  },
-  //监听该投票是否到期
-  watchIsDateEnd(){
-    let currPage = this;
-    let isEnd = currPage.data.isEnd;
-    if(!isEnd){
-      let si = setInterval(()=>{
-        let isEnd = currPage.data.isEnd;
-        currPage.compareTime();
-        if(isEnd){
-          clearInterval(si);
-        }
-      },1000);
-    }
-  },
-  //获取所有投票的选项列表
-  getAnswers(){
-    let currPage = this;
-    let {surveyId} = currPage.data;
-    let isAnonymity = currPage.data.surveyInfo.get('isAnonymity');
-    const cql = `select text,voteUsers from answer where surveyId ='${surveyId}' order by sequence asc`;
-    AV.Query.doCloudQuery(cql).then(function (data) {
-      // results 即为查询结果，它是一个 AV.Object 数组
-      const answerList = data.results;
-      currPage.setData({answerList});
-      currPage.setHasSubmit(answerList);
-      currPage.getTotalVotes(answerList);
-      currPage.setPercentArr(answerList);
-      //如果是匿名投票将不显示投票者信息
-      if(!isAnonymity){
-         currPage.setAvatarList(answerList);
-         currPage.setHideAvatarList(answerList);
-      }
-      wx.hideLoading();
-      wx.stopPullDownRefresh();
-      currPage.setData({ show:true });
-    }, function (error) {
-      wx.hideLoading();
-      wx.stopPullDownRefresh();
-    });
-  },
-  //判断该用户是否已经提交过
-  setHasSubmit(answerList){
-    let arr = new Array();
-    let userId = app.globalData.userId;
-    for(let i = 0;i<answerList.length;i++){
-      let voteUsers = answerList[i]['attributes']['voteUsers'];
-      if (voteUsers.indexOf(userId)>=0) {
-        this.setData({
-          hasSubmit:true
-        });
-        break;
-      }
-    }
-    
-  },
-  updateVoteNums(nums){
-    let currPage = this;
-    const surveyId = currPage.data.surveyId;
-    let survey = AV.Object.createWithoutData('survey', surveyId);
-    survey.set('voteNums', nums).save();
+    // 用户状态
+    user: null,
+    isAuthenticated: false,
+    hasParticipated: false,
+    userSelections: [],
+
+    // 投票统计
+    totalVotes: 0,
+    totalParticipants: 0,
+
+    // UI状态
+    loading: true,
+    submitting: false,
+    showResults: false,
+    showError: false,
+    errorMessage: '',
+
+    // 投票状态
+    isExpired: false,
+    canParticipate: true,
+
+    // 显示设置
+    showParticipants: true,
+    maxParticipantsShow: 5
   },
 
-  getTotalVotes(arr){
-    let totalVotes = 0;
-    let percent = 0.0;
-    for(let i = 0;i<arr.length;i++){
-        let voteUsers = arr[i]['attributes']['voteUsers'];
-		    totalVotes += voteUsers.length;
-	  }
-    this.setData({totalVotes});
-    this.updateVoteNums(totalVotes);
-  },
-  setPercentArr(answerList){
-    let totalVotes = this.data.totalVotes;
-    let percent = '0.0';
-    let percentArr = [];
-    for(let i = 0;i<answerList.length;i++){
-        let num = answerList[i]['attributes']['voteUsers'].length;
-        if(totalVotes<=0){
-          percent = percent;
-        }else{
-          percent = ((num/totalVotes)*100).toFixed(1);
-        }
-		    percentArr.push(percent);
-	  }
-    this.setData({percentArr});
-  },
-  setHideAvatarList(answerList){
-    let hideAvatarList = new Array();
-    for(let i = 0;i<answerList.length;i++){
-      hideAvatarList.push(false);
+  /**
+   * 页面加载
+   */
+  async onLoad(options) {
+    const { surveyId } = options
+
+    if (!surveyId) {
+      this.showErrorMessage('投票ID无效')
+      // 延迟返回，确保错误消息显示
+      setTimeout(() => {
+        NavigationHelper.navigateBack()
+      }, 1500)
+      return
     }
-    this.setData({hideAvatarList});
-  },
-  setUploadImgs(){
-    let currPage = this;
-    let uploadImgs = [];
-    let imgIds = this.data.surveyInfo['attributes']['imgIds'];
-    let objects = new Array();
-    for(let i=0;i<imgIds.length;i++){
-      let file = AV.Object.createWithoutData('_File', imgIds[i]);;
-      objects.push(file);
-    }
-    AV.Object.fetchAll(objects).then(function (objects) {
-      for(let i=0;i<objects.length;i++){
-        uploadImgs.push(objects[i].get('url'));
-      }
-      currPage.setData({uploadImgs});
-    });
+
+    this.setData({ surveyId })
+
+    // 初始化认证服务
+    await hybridAuthService.initialize()
+    this.updateUserState()
+
+    // 加载投票数据
+    await this.loadSurveyData()
   },
 
-  showAvatar(e){
-    let idx = e.currentTarget.dataset.idx;
-    let {hideAvatarList} = this.data;
-    hideAvatarList[idx] = !hideAvatarList[idx];
-    this.setData({hideAvatarList})
+  /**
+   * 页面显示
+   */
+  onShow() {
+    this.updateUserState()
   },
-  setAvatarList(answerList){
-    let currPage = this;
-    let showAvatarNums = this.data.showAvatarNums;
-    let arrList = new Array();//存放所有选项前五名的userId
-    let numsArr = new Array();//存放每个选项显示userAvatar的个数
-    for(let i=0;i<answerList.length;i++){
-      let arr = answerList[i]['attributes']['voteUsers'].slice(-showAvatarNums);
-      numsArr.push(arr.length);
-      arrList = arrList.concat(arr);
-      // 生成一个Promise对象的数组
-      // let promises = arr.map(function (id) {
-      //   // let user = AV.Object.createWithoutData('_User',id);
-      //   return new AV.Query('_User').get(id);
-      // });
-      // Promise.all(promises).then(function (data) {
-      //   avatarUrls[i] = data.reverse();
-      //   // avatarUrls = avatarUrls.reverse();
-      //   currPage.setData({avatarUrls});
-      // }).catch(function(reason){
-      //   // ...
-      // });
-    }
-    let objects = new Array();
-    for(let i = 0;i<arrList.length;i++){
-      let user = AV.Object.createWithoutData('_User',arrList[i]);
-      objects.push(user);
-    }
-    AV.Object.fetchAll(objects).then(function (objects) {
-         let users = currPage.getUsersList(objects);
-         let avatarUrls = currPage.categoryUsers(users,numsArr);
-         currPage.setData({avatarUrls});
-    });
-  },
- getUsersList(objects){
-    let arr = new Array();
-    for(let  i = 0;i<objects.length;i++){
-      let obj = new Object();
-      obj.avatarUrl = objects[i].get('avatarUrl');
-      obj.nickName = objects[i].get('nickName');
-      arr.push(obj);
-    }
-    return arr;
- },
-  
-  //将所有取出的要显示的user重新编排，比如[[id1,id2],[],[id4,id7]]
-  categoryUsers(objects,numsArr){
-    let avatarUrls = new Array();
-    let sum = 0;
-    for(let i = 0;i<numsArr.length;i++){
-      avatarUrls[i] = objects.slice(sum,sum+numsArr[i]).reverse();
-      sum+=numsArr[i];
-      
-    }
-    return avatarUrls;
-  },
-  previewImage(e){
-    let uploadImgs = this.data.uploadImgs;
-    let idx = e.currentTarget.dataset.idx;
-    wx.previewImage({
-      current: uploadImgs[idx], // 当前显示图片的http链接
-      urls: uploadImgs // 需要预览的图片http链接列表
+
+  /**
+   * 更新用户状态
+   */
+  updateUserState() {
+    const user = hybridAuthService.getCurrentUser()
+    const isAuthenticated = hybridAuthService.isUserAuthenticated()
+
+    this.setData({
+      user: user,
+      isAuthenticated: isAuthenticated
     })
   },
-  check(e){
-    console.log("hasSubmit==="+this.data.hasSubmit);
-    let flag = true;
-    const values = e.detail.value;
-    if(this.data.hasSubmit){
-      this.showError('您已经投过了，请勿重复提交!❤️');
-      flag = false;
-      return;
-    }
-    if(values.answerId.length<=0){
-      this.showError('请勾选一项进行投票！❤️');
-      flag = false;
-      return;
-    }
-    
-    return flag;
-  },
-  radioSubmit(e){
-      let currPage = this;
-      let answerId = e.detail.value.answerId;
-      const cql1 = `select voteUsers from answer where objectId ='${answerId}'`;
-      let voteUsers = new Array();
-      AV.Query.doCloudQuery(cql1).then(function (data) {
-      // results 即为查询结果，它是一个 AV.Object 数组
-        const result = data.results[0];
-        let userId = app.globalData.userId;
-         voteUsers = result['attributes']['voteUsers'];
-         voteUsers.push(userId);
-      }).then(function(){
-        let answer = AV.Object.createWithoutData('answer', answerId);
-        // 修改属性
-        answer.set('voteUsers', voteUsers);
-        // 保存到云端
-        answer.save().then(()=>{
-          currPage.saveParticipant();
-          currPage.getAnswers();
-        });
-      });
-  },
-  checkboxSubmit(e){
-     let currPage = this;
-     let answerIds = e.detail.value.answerId;
-     let userId = app.globalData.userId;
-     for(let i =0;i<answerIds.length;i++){
-      const cql1 = `select voteUsers from answer where objectId ='${answerIds[i]}'`;
-      let voteUsers = new Array();
-      AV.Query.doCloudQuery(cql1).then(function (data) {
-      // results 即为查询结果，它是一个 AV.Object 数组
-        const result = data.results[0];
-         voteUsers = result['attributes']['voteUsers'];
-         voteUsers.push(userId);
-      }).then(function(){
-        let answer = AV.Object.createWithoutData('answer', answerIds[i]);
-        // 修改属性
-        answer.set('voteUsers', voteUsers);
-        // 保存到云端
-        answer.save().then(()=>{
-          currPage.getAnswers();
-        });
-      });
-     }
-     currPage.saveParticipant();
-  },
-  saveParticipant(){
-    let surveyId = this.data.surveyId;
-    let userId = app.globalData.userId;
-    // let open = this.data.surveyInfo.get('open');
-    let participant = new AV.Object('participant');
-    let survey = AV.Object.createWithoutData('survey', surveyId);
-    let _User = AV.Object.createWithoutData('_User', userId);
-    // 添加属性
-    participant.set('surveyId', survey);
-    participant.set('userId', _User);
-    // participant.set('open', true);
-    // 保存到云端
-    participant.save();
-  },
-  formSubmit(e){
-    let type = this.data.surveyInfo['attributes']['type'];
-    let hasSubmit = this.data.hasSubmit;
-    if(this.check(e)){
-      util.setBtnLoading(this);
-      switch(type){
-        case '0':
-          this.radioSubmit(e);
-          break;
-        case '1':
-          this.checkboxSubmit(e);
-          break;
-        default:
-          break;
+
+  /**
+   * 加载投票数据
+   */
+  async loadSurveyData() {
+    this.setData({ loading: true })
+
+    try {
+      const { data, error } = await surveyService.getSurveyDetail(this.data.surveyId)
+
+      if (error) {
+        this.showErrorMessage(error)
+        return
       }
-      
-    }
-    
-  },
-  openIndex() {
-    wx.switchTab({
-      url: '/pages/index/index'
-    });
-  },
-  showError(str){
-    this.setData({
-      errTipShow : true,
-      errTxt:str
-    });
-    let st = setTimeout(()=>{
+
+      if (!data) {
+        this.showErrorMessage('投票不存在')
+        return
+      }
+
+      // 设置投票数据
       this.setData({
-       errTipShow:false,
-      });
-      clearTimeout(st);
-    },2000);
+        survey: data,
+        options: data.options || [],
+        hasParticipated: data.hasParticipated || false,
+        totalVotes: data.total_votes || 0,
+        totalParticipants: data.total_participants || 0
+      })
+
+      // 检查投票状态
+      this.checkSurveyStatus()
+
+      // 如果已参与，显示结果
+      if (data.hasParticipated) {
+        this.setData({ showResults: true })
+        await this.loadUserParticipation()
+      }
+
+    } catch (error) {
+      console.error('Load survey data failed:', error)
+      this.showErrorMessage('加载投票失败')
+    } finally {
+      this.setData({ loading: false })
+    }
   },
+
+  /**
+   * 检查投票状态
+   */
+  checkSurveyStatus() {
+    const { survey } = this.data
+
+    if (!survey) return
+
+    // 检查是否过期
+    let isExpired = false
+    let canParticipate = true
+
+    if (survey.end_time) {
+      const endTime = new Date(survey.end_time)
+      const now = new Date()
+      isExpired = now > endTime
+    }
+
+    // 检查是否可以参与
+    if (isExpired) {
+      canParticipate = false
+    } else if (survey.access_level === 'authenticated' && !this.data.isAuthenticated) {
+      canParticipate = false
+    } else if (this.data.hasParticipated) {
+      canParticipate = false
+    }
+
+    this.setData({
+      isExpired,
+      canParticipate
+    })
+  },
+
+  /**
+   * 加载用户参与记录
+   */
+  async loadUserParticipation() {
+    if (!this.data.isAuthenticated || !this.data.hasParticipated) {
+      return
+    }
+
+    try {
+      // 这里可以加载用户的具体选择记录
+      // 暂时使用简单的逻辑
+      this.setData({ userSelections: [] })
+
+    } catch (error) {
+      console.error('Load user participation failed:', error)
+    }
+  },
+
+  /**
+   * 选项选择处理
+   */
+  onOptionSelect(e) {
+    if (!this.data.canParticipate) {
+      if (!this.data.isAuthenticated) {
+        NavigationHelper.showAuthPrompt('参与投票需要先授权')
+      } else if (this.data.hasParticipated) {
+        this.showErrorMessage('您已经参与过此投票')
+      } else if (this.data.isExpired) {
+        this.showErrorMessage('投票已结束')
+      }
+      return
+    }
+
+    const optionId = e.currentTarget.dataset.optionId
+    const { survey, userSelections } = this.data
+
+    let newSelections = [...userSelections]
+
+    if (survey.survey_type === 'single_choice') {
+      // 单选：替换选择
+      newSelections = [optionId]
+    } else {
+      // 多选：切换选择
+      const index = newSelections.indexOf(optionId)
+      if (index > -1) {
+        newSelections.splice(index, 1)
+      } else {
+        newSelections.push(optionId)
+      }
+    }
+
+    this.setData({ userSelections: newSelections })
+  },
+
+  /**
+   * 提交投票
+   */
+  async onSubmitVote() {
+    if (this.data.submitting) return
+
+    const { userSelections, isAuthenticated } = this.data
+
+    // 检查授权状态
+    if (!isAuthenticated) {
+      const authorized = await NavigationHelper.showAuthPrompt('参与投票需要先授权')
+      if (!authorized) return
+
+      // 重新检查状态
+      this.updateUserState()
+      if (!this.data.isAuthenticated) return
+    }
+
+    // 验证选择
+    if (!userSelections || userSelections.length === 0) {
+      this.showErrorMessage('请选择投票选项')
+      return
+    }
+
+    this.setData({ submitting: true })
+
+    try {
+      const { success, error } = await surveyService.participateInSurvey(
+        this.data.surveyId,
+        userSelections
+      )
+
+      if (success) {
+        wx.showToast({
+          title: SUCCESS_MESSAGES.SURVEY.PARTICIPATE_SUCCESS,
+          icon: 'success'
+        })
+
+        // 更新状态并显示结果
+        this.setData({
+          hasParticipated: true,
+          canParticipate: false,
+          showResults: true
+        })
+
+        // 重新加载数据以获取最新统计
+        await this.loadSurveyData()
+
+      } else {
+        this.showErrorMessage(error || '投票失败')
+      }
+
+    } catch (error) {
+      console.error('Submit vote failed:', error)
+      this.showErrorMessage('投票失败，请重试')
+    } finally {
+      this.setData({ submitting: false })
+    }
+  },
+
+  /**
+   * 切换结果显示
+   */
+  onToggleResults() {
+    this.setData({
+      showResults: !this.data.showResults
+    })
+  },
+
+  /**
+   * 下拉刷新
+   */
+  async onPullDownRefresh() {
+    await this.loadSurveyData()
+    wx.stopPullDownRefresh()
+  },
+
+  /**
+   * 分享功能
+   */
   onShareAppMessage() {
-    // let currPage = this;
-    let nickName = app.globalData.userInfo.nickName;
-    // const surveyId = currPage.data.surveyId;
-    
-    let title = `🔴${nickName}给您发来了一个投票`;
-    // console.log(surveyId);
+    const { survey } = this.data
+
     return {
-      title: title,
-      // path: `/page/result?id=${surveyId}`,
-      success: function(res) {
-        // 分享成功
+      title: survey?.title || '投票分享',
+      path: `/pages/result/index?surveyId=${this.data.surveyId}`,
+      success: (res) => {
+        console.log('Share success:', res)
       },
-      fail: function(res) {
-        // 分享失败
+      fail: (res) => {
+        console.log('Share failed:', res)
       }
     }
   },
-  onPullDownRefresh(){
-    this.init();
+
+  /**
+   * 导航到创建投票页面
+   */
+  async navigateToCreate() {
+    await NavigationHelper.navigateTo('/pages/index/index', {
+      showAuthPrompt: true,
+      authPromptMessage: '创建投票需要先授权'
+    })
+  },
+
+  /**
+   * 授权按钮点击
+   */
+  async onAuthorizeTap() {
+    const result = await NavigationHelper.handleAuthorization()
+
+    if (result.success) {
+      // 授权成功后重新检查状态
+      this.updateUserState()
+      this.checkSurveyStatus()
+    }
+  },
+
+  /**
+   * 显示错误消息
+   */
+  showErrorMessage(message) {
+    this.setData({
+      showError: true,
+      errorMessage: message
+    })
+
+    setTimeout(() => {
+      this.setData({ showError: false })
+    }, 3000)
   }
 })

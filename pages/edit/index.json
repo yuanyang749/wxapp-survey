@@ -3,6 +3,6 @@
   "navigationBarTextStyle": "black",
   "navigationBarTitleText": "编辑投票",
   "backgroundTextStyle": "dark",
-  "backgroundColor": "white",
+  "backgroundColor": "#ffffff",
   "enablePullDownRefresh":true
 }

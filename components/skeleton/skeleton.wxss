@@ -1,0 +1,252 @@
+/* 骨架屏组件样式 */
+
+.skeleton-container {
+  padding: 20rpx;
+}
+
+/* 基础骨架屏元素 */
+.skeleton-base {
+  background-color: #f2f2f2;
+  border-radius: 8rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 动画效果 */
+.animated .skeleton-base::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* 头像 */
+.skeleton-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background-color: #f2f2f2;
+  flex-shrink: 0;
+}
+
+.skeleton-avatar-small {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background-color: #f2f2f2;
+}
+
+.skeleton-avatar-large {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background-color: #f2f2f2;
+}
+
+/* 文本 */
+.skeleton-title {
+  height: 40rpx;
+  background-color: #f2f2f2;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.skeleton-title-small {
+  height: 32rpx;
+  background-color: #f2f2f2;
+  border-radius: 6rpx;
+  margin-bottom: 16rpx;
+}
+
+.skeleton-text {
+  height: 28rpx;
+  background-color: #f2f2f2;
+  border-radius: 6rpx;
+  margin-bottom: 12rpx;
+}
+
+.skeleton-text-long {
+  width: 100%;
+}
+
+.skeleton-text-medium {
+  width: 75%;
+}
+
+.skeleton-text-short {
+  width: 50%;
+}
+
+.skeleton-text-mini {
+  width: 60rpx;
+  height: 24rpx;
+}
+
+.skeleton-text-group {
+  margin-bottom: 20rpx;
+}
+
+/* 图片 */
+.skeleton-image {
+  width: 100%;
+  height: 300rpx;
+  background-color: #f2f2f2;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 数字和标签 */
+.skeleton-number {
+  width: 60rpx;
+  height: 36rpx;
+  background-color: #f2f2f2;
+  border-radius: 6rpx;
+  margin-bottom: 12rpx;
+}
+
+.skeleton-label {
+  width: 80rpx;
+  height: 24rpx;
+  background-color: #f2f2f2;
+  border-radius: 4rpx;
+}
+
+/* 卡片类型 */
+.skeleton-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-content {
+  margin-top: 20rpx;
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 30rpx;
+}
+
+.skeleton-stats {
+  margin-left: auto;
+  display: flex;
+  gap: 20rpx;
+}
+
+/* 列表类型 */
+.skeleton-list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 30rpx;
+  background-color: #fff;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-list-content {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+/* 个人资料类型 */
+.skeleton-profile {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+.skeleton-user-details {
+  flex: 1;
+  margin-left: 30rpx;
+}
+
+.skeleton-stats-grid {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 30rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.skeleton-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* 默认类型 */
+.skeleton-default-item {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 应用动画到所有骨架屏元素 */
+.animated .skeleton-avatar,
+.animated .skeleton-avatar-small,
+.animated .skeleton-avatar-large,
+.animated .skeleton-title,
+.animated .skeleton-title-small,
+.animated .skeleton-text,
+.animated .skeleton-image,
+.animated .skeleton-number,
+.animated .skeleton-label {
+  position: relative;
+  overflow: hidden;
+}
+
+.animated .skeleton-avatar::after,
+.animated .skeleton-avatar-small::after,
+.animated .skeleton-avatar-large::after,
+.animated .skeleton-title::after,
+.animated .skeleton-title-small::after,
+.animated .skeleton-text::after,
+.animated .skeleton-image::after,
+.animated .skeleton-number::after,
+.animated .skeleton-label::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}

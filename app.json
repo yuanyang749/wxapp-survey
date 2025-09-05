@@ -12,11 +12,10 @@
   "window":{
     "navigationBarTextStyle": "black",
     "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "white"
-    
+    "backgroundColor": "#ffffff"
   },
   "tabBar": {
-    "backgroundColor":"#fff",
+    "backgroundColor":"#ffffff",
     "color":"#2c2c2c",
     "borderStyle":"white",
     "selectedColor":"#5f1971",

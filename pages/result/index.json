@@ -3,6 +3,9 @@
   "navigationBarTextStyle": "black",
   "navigationBarTitleText": "请投票",
   "backgroundTextStyle": "dark",
-  "backgroundColor": "white",
-  "enablePullDownRefresh":true
+  "backgroundColor": "#ffffff",
+  "enablePullDownRefresh":true,
+  "usingComponents": {
+    "skeleton": "/components/skeleton/skeleton"
+  }
 }

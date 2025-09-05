@@ -1,55 +1,355 @@
 /* pages/main/index.wxss */
-.page{background-color: #fff}
-.select-list{
-  font-size:30rpx;
-  box-sizing: border-box;
-  background-color: #e5e9f2;
-  margin-top: 4rpx;
-  /* margin-bottom:20rpx; */
-  /* display: flex; */
-  justify-content: space-between;
-  flex-wrap: wrap;
-  padding: 12rpx;
-  display: none;
+.page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
-.select-list.on{
-  display: flex;
-}
-.widget-post{
-  background-color: #fff;
-  box-shadow: 1px 1px 1px #cccccc;
-  margin-bottom: 20rpx;
-  width:356rpx;
-}  
-.panel-header{
-  position: relative
-}
-.top-item{
-  background-color:rgba(237, 85, 101, 0.8);
-  padding:6rpx 10rpx;
-  position:absolute;
-  top:10rpx;
-  right:10rpx;
-  z-index:12;
-  color:#fff;
-  font-size:20rpx;
-  border-radius:10rpx;
 
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff;
 }
-.header-img{
+
+.loading-spinner {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #5f1971;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner.small {
+  width: 30rpx;
+  height: 30rpx;
+  border-width: 3rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  color: #666;
+  font-size: 28rpx;
+}
+
+/* 骨架屏样式 */
+.skeleton-wrapper {
+  padding: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.banner-skeleton {
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.skeleton-banner {
+  width: 100%;
+  height: 300rpx;
+  background-color: #f2f2f2;
+  border-radius: 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* 用户状态栏 */
+.user-status-bar {
+  background-color: #fff;
+  padding: 20rpx 30rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.user-name {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+  margin-right: 20rpx;
+}
+
+.auth-status {
+  font-size: 24rpx;
+  color: #5f1971;
+  background-color: rgba(95, 25, 113, 0.1);
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.auth-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.prompt-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.prompt-icon {
+  width: 60rpx;
+  height: 60rpx;
+  margin-right: 20rpx;
+}
+
+.prompt-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.prompt-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.prompt-desc {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.auth-btn {
+  background: linear-gradient(135deg, #5f1971, #7b2d8e);
+  color: #fff;
+  font-size: 26rpx;
+  padding: 16rpx 24rpx;
+  border-radius: 25rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
+}
+
+.auth-btn::after {
+  border: none;
+}
+/* 投票列表 */
+.survey-list {
+  padding: 0 20rpx;
+}
+
+.survey-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.survey-card:active {
+  transform: scale(0.98);
+}
+
+.survey-cover {
   position: relative;
   width: 100%;
-  background-color: #333;
-  height: 160px;
+  height: 300rpx;
+  background-color: #f0f0f0;
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center
+  background-position: center;
 }
-.panel-header image{
-  width: 100%;
-  background-color: #ddd;
-  height: 160px;
-  vertical-align: middle
+
+.featured-badge {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  background-color: rgba(237, 85, 101, 0.9);
+  color: #fff;
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  z-index: 10;
+}
+
+.access-badge {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 8rpx;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.lock-icon {
+  width: 24rpx;
+  height: 24rpx;
+}
+
+.survey-info {
+  padding: 30rpx;
+}
+
+.survey-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.survey-desc {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.survey-stats {
+  display: flex;
+  align-items: center;
+  gap: 30rpx;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 8rpx;
+}
+
+.stat-text {
+  font-size: 26rpx;
+  color: #666;
+}
+/* 创建者信息 */
+.creator-info {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-top: 1rpx solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.creator-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.creator-name {
+  font-size: 26rpx;
+  color: #666;
+  margin-right: 20rpx;
+}
+
+.create-time {
+  font-size: 24rpx;
+  color: #999;
+  margin-left: auto;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 40rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 加载更多 */
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.loading-more .loading-text {
+  margin-left: 20rpx;
+  margin-top: 0;
+}
+
+/* 没有更多数据 */
+.no-more-data {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 26rpx;
 }
 .panel-content{
   box-sizing: border-box;

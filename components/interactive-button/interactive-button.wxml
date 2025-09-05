@@ -1,0 +1,50 @@
+<!--交互式按钮组件-->
+<view
+  class="{{getButtonClass()}} {{isPressed ? 'button-pressed' : ''}}"
+  animation="{{animationData}}"
+  bindtap="onButtonTap"
+  bindtouchstart="onButtonTouchStart"
+  bindtouchend="onButtonTouchEnd"
+  bindtouchcancel="onButtonTouchEnd">
+  
+  <!-- 涟漪效果 -->
+  <view wx:if="{{feedback === 'ripple'}}" class="ripple-container">
+    <view 
+      wx:for="{{ripples}}" 
+      wx:key="id"
+      class="ripple"
+      style="left: {{item.x}}px; top: {{item.y}}px; width: {{item.size}}px; height: {{item.size}}px;">
+    </view>
+  </view>
+  
+  <!-- 按钮内容 -->
+  <view class="button-content">
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="button-loading-content">
+      <view class="loading-spinner"></view>
+      <text class="button-text">{{loadingText}}</text>
+    </view>
+    
+    <!-- 正常状态 -->
+    <view wx:else class="button-normal-content">
+      <!-- 左侧图标 -->
+      <image 
+        wx:if="{{icon && iconPosition === 'left'}}"
+        class="{{getIconClass()}}"
+        src="{{icon}}"
+        mode="aspectFit">
+      </image>
+      
+      <!-- 按钮文本 -->
+      <text class="button-text">{{text}}</text>
+      
+      <!-- 右侧图标 -->
+      <image 
+        wx:if="{{icon && iconPosition === 'right'}}"
+        class="{{getIconClass()}}"
+        src="{{icon}}"
+        mode="aspectFit">
+      </image>
+    </view>
+  </view>
+</view>

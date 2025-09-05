@@ -1,0 +1,128 @@
+/* 空状态组件样式 */
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+  padding: 60rpx 40rpx;
+  background-color: transparent;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 500rpx;
+}
+
+/* 图标样式 */
+.empty-icon-wrapper {
+  margin-bottom: 40rpx;
+}
+
+.empty-icon {
+  display: block;
+  opacity: 0.6;
+}
+
+.empty-icon-small {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.empty-icon-medium {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.empty-icon-large {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+/* 标题样式 */
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20rpx;
+  line-height: 1.4;
+}
+
+/* 描述样式 */
+.empty-description {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 40rpx;
+}
+
+/* 按钮样式 */
+.empty-button-wrapper {
+  margin-top: 20rpx;
+}
+
+.empty-button {
+  background: linear-gradient(135deg, #5f1971, #7b2d8e);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+  padding: 24rpx 48rpx;
+  border-radius: 30rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
+  transition: all 0.3s ease;
+}
+
+.empty-button::after {
+  border: none;
+}
+
+.empty-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(95, 25, 113, 0.3);
+}
+
+/* 不同类型的特殊样式 */
+.empty-state.error .empty-title {
+  color: #ff4757;
+}
+
+.empty-state.network .empty-title {
+  color: #ffa726;
+}
+
+.empty-state.loading .empty-icon {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .empty-state {
+    padding: 40rpx 30rpx;
+  }
+  
+  .empty-title {
+    font-size: 30rpx;
+  }
+  
+  .empty-description {
+    font-size: 26rpx;
+  }
+  
+  .empty-button {
+    font-size: 28rpx;
+    padding: 20rpx 40rpx;
+  }
+}

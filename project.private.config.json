@@ -1,0 +1,15 @@
+{
+  "libVersion": "3.9.2",
+  "projectname": "wxapp-survey",
+  "setting": {
+    "urlCheck": false,
+    "coverView": true,
+    "lazyloadPlaceholderEnable": false,
+    "skylineRenderEnable": false,
+    "preloadBackgroundData": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "compileHotReLoad": true,
+    "bigPackageSizeSupport": true
+  }
+}

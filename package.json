@@ -1,0 +1,27 @@
+{
+  "name": "wxapp-survey",
+  "version": "1.0.0",
+  "description": "微信小程序投票系统",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node scripts/fix-phoenix-syntax.js",
+    "fix-compatibility": "node scripts/fix-phoenix-syntax.js"
+  },
+  "keywords": [
+    "wechat",
+    "miniprogram",
+    "survey",
+    "vote",
+    "supabase"
+  ],
+  "author": "yuanyang749",
+  "license": "MIT",
+  "dependencies": {
+    "supabase-wechat-stable-v2": "^2.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuanyang749/wxapp-survey.git"
+  }
+}

@@ -1,0 +1,97 @@
+<!--骨架屏组件-->
+<view wx:if="{{show}}" class="skeleton-container {{animated ? 'animated' : ''}}">
+  
+  <!-- 卡片类型骨架屏 -->
+  <block wx:if="{{type === 'card'}}">
+    <view wx:for="{{skeletonItems}}" wx:key="id" class="skeleton-card">
+      <!-- 图片占位 -->
+      <view wx:if="{{item.hasImage}}" class="skeleton-image"></view>
+      
+      <!-- 内容区域 -->
+      <view class="skeleton-content">
+        <!-- 标题 -->
+        <view wx:if="{{item.hasTitle}}" class="skeleton-title"></view>
+        
+        <!-- 描述内容 -->
+        <view wx:if="{{item.hasContent}}" class="skeleton-text-group">
+          <view class="skeleton-text skeleton-text-long"></view>
+          <view class="skeleton-text skeleton-text-medium"></view>
+        </view>
+        
+        <!-- 底部信息 -->
+        <view wx:if="{{item.hasFooter}}" class="skeleton-footer">
+          <view class="skeleton-avatar-small"></view>
+          <view class="skeleton-text skeleton-text-short"></view>
+          <view class="skeleton-stats">
+            <view class="skeleton-text skeleton-text-mini"></view>
+            <view class="skeleton-text skeleton-text-mini"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 列表类型骨架屏 -->
+  <block wx:elif="{{type === 'list'}}">
+    <view wx:for="{{skeletonItems}}" wx:key="id" class="skeleton-list-item">
+      <!-- 头像 -->
+      <view wx:if="{{item.hasAvatar}}" class="skeleton-avatar"></view>
+      
+      <!-- 内容 -->
+      <view class="skeleton-list-content">
+        <view wx:if="{{item.hasTitle}}" class="skeleton-title-small"></view>
+        <view wx:if="{{item.hasContent}}" class="skeleton-text-group">
+          <view class="skeleton-text skeleton-text-long"></view>
+          <view class="skeleton-text skeleton-text-medium"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 个人资料类型骨架屏 -->
+  <block wx:elif="{{type === 'profile'}}">
+    <view class="skeleton-profile">
+      <!-- 用户信息 -->
+      <view class="skeleton-user-info">
+        <view class="skeleton-avatar-large"></view>
+        <view class="skeleton-user-details">
+          <view class="skeleton-title"></view>
+          <view class="skeleton-text skeleton-text-short"></view>
+        </view>
+      </view>
+      
+      <!-- 统计数据 -->
+      <view wx:if="{{skeletonItems[0].hasStats}}" class="skeleton-stats-grid">
+        <view class="skeleton-stat-item">
+          <view class="skeleton-number"></view>
+          <view class="skeleton-label"></view>
+        </view>
+        <view class="skeleton-stat-item">
+          <view class="skeleton-number"></view>
+          <view class="skeleton-label"></view>
+        </view>
+        <view class="skeleton-stat-item">
+          <view class="skeleton-number"></view>
+          <view class="skeleton-label"></view>
+        </view>
+        <view class="skeleton-stat-item">
+          <view class="skeleton-number"></view>
+          <view class="skeleton-label"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 默认类型骨架屏 -->
+  <block wx:else>
+    <view wx:for="{{skeletonItems}}" wx:key="id" class="skeleton-default-item">
+      <view wx:if="{{item.hasTitle}}" class="skeleton-title"></view>
+      <view wx:if="{{item.hasContent}}" class="skeleton-text-group">
+        <view class="skeleton-text skeleton-text-long"></view>
+        <view class="skeleton-text skeleton-text-medium"></view>
+        <view class="skeleton-text skeleton-text-short"></view>
+      </view>
+    </view>
+  </block>
+  
+</view>

@@ -1,0 +1,257 @@
+/* 交互式按钮组件样式 */
+
+.interactive-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8rpx;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.interactive-button::after {
+  border: none;
+}
+
+/* 按钮类型样式 */
+.button-primary {
+  background: linear-gradient(135deg, #5f1971, #7b2d8e);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
+}
+
+.button-primary:not(.button-disabled):not(.button-loading):active {
+  box-shadow: 0 2rpx 8rpx rgba(95, 25, 113, 0.4);
+}
+
+.button-secondary {
+  background-color: #f8f9fa;
+  color: #5f1971;
+  border: 2rpx solid #5f1971;
+}
+
+.button-secondary:not(.button-disabled):not(.button-loading):active {
+  background-color: #e9ecef;
+}
+
+.button-ghost {
+  background-color: transparent;
+  color: #5f1971;
+  border: 2rpx solid #5f1971;
+}
+
+.button-ghost:not(.button-disabled):not(.button-loading):active {
+  background-color: rgba(95, 25, 113, 0.1);
+}
+
+.button-danger {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(255, 71, 87, 0.3);
+}
+
+.button-danger:not(.button-disabled):not(.button-loading):active {
+  box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.4);
+}
+
+/* 按钮尺寸样式 */
+.button-small {
+  padding: 16rpx 24rpx;
+  font-size: 26rpx;
+  min-height: 60rpx;
+}
+
+.button-medium {
+  padding: 24rpx 32rpx;
+  font-size: 30rpx;
+  min-height: 80rpx;
+}
+
+.button-large {
+  padding: 32rpx 48rpx;
+  font-size: 34rpx;
+  min-height: 100rpx;
+}
+
+/* 按钮状态样式 */
+.button-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.button-loading {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.button-pressed {
+  transform: scale(0.98);
+}
+
+/* 按钮形状样式 */
+.button-round {
+  border-radius: 50rpx;
+}
+
+.button-block {
+  width: 100%;
+  display: flex;
+}
+
+/* 按钮内容样式 */
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.button-normal-content,
+.button-loading-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.button-text {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* 图标样式 */
+.button-icon {
+  flex-shrink: 0;
+}
+
+.button-icon-small {
+  width: 24rpx;
+  height: 24rpx;
+}
+
+.button-icon-medium {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.button-icon-large {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.button-icon-left {
+  margin-right: 8rpx;
+}
+
+.button-icon-right {
+  margin-left: 8rpx;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  width: 24rpx;
+  height: 24rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border-top: 3rpx solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.button-secondary .loading-spinner,
+.button-ghost .loading-spinner {
+  border: 3rpx solid rgba(95, 25, 113, 0.3);
+  border-top: 3rpx solid #5f1971;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 涟漪效果 */
+.ripple-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.ripple {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-animation 0.6s ease-out;
+  pointer-events: none;
+}
+
+.button-secondary .ripple,
+.button-ghost .ripple {
+  background-color: rgba(95, 25, 113, 0.2);
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* 悬停效果（仅在支持的设备上） */
+@media (hover: hover) {
+  .interactive-button:not(.button-disabled):not(.button-loading):hover {
+    transform: translateY(-2rpx);
+  }
+  
+  .button-primary:not(.button-disabled):not(.button-loading):hover {
+    box-shadow: 0 6rpx 16rpx rgba(95, 25, 113, 0.4);
+  }
+  
+  .button-danger:not(.button-disabled):not(.button-loading):hover {
+    box-shadow: 0 6rpx 16rpx rgba(255, 71, 87, 0.4);
+  }
+}
+
+/* 焦点样式 */
+.interactive-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4rpx rgba(95, 25, 113, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .button-small {
+    padding: 14rpx 20rpx;
+    font-size: 24rpx;
+    min-height: 56rpx;
+  }
+  
+  .button-medium {
+    padding: 20rpx 28rpx;
+    font-size: 28rpx;
+    min-height: 72rpx;
+  }
+  
+  .button-large {
+    padding: 28rpx 40rpx;
+    font-size: 32rpx;
+    min-height: 88rpx;
+  }
+}

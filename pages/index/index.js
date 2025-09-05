@@ -1,216 +1,485 @@
-const {AV,util} = require('../../utils/common.js');
-const app = getApp();
+/**
+ * 投票创建页面
+ * 使用 Supabase 数据库替代 LeanCloud
+ */
+
+import hybridAuthService from '../../services/HybridAuthService.js'
+import fileUploadService from '../../services/FileUploadService.js'
+import NavigationHelper from '../../utils/NavigationHelper.js'
+import { supabase } from '../../config/supabase.js'
+import { APP_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config/app.js'
+
 Page({
   data: {
-    Deadline:'',
-    startDay:'',
-    endDay:'',
-    inputArr:[{},{}],
-    time:'',
-    uploadImgs:[],
-    inputMin:2,
-    inputMax:10,
-    errTipShow:false,
-    errTxt:'',
-    btnLoad:false,
-    btnDisabled:false
+    // 用户状态
+    user: null,
+    isAuthenticated: false,
+
+    // 表单数据
+    title: '',
+    description: '',
+    surveyType: 'single_choice', // 'single_choice' | 'multiple_choice'
+    accessLevel: 'public', // 'public' | 'authenticated' | 'owner_only'
+    endTime: '',
+
+    // 选项管理
+    options: [
+      { text: '', order: 0 },
+      { text: '', order: 1 }
+    ],
+    minOptions: 2,
+    maxOptions: 10,
+
+    // 文件上传
+    coverImage: null,
+    uploadedFiles: [],
+    uploading: false,
+
+    // UI状态
+    loading: false,
+    submitting: false,
+    showError: false,
+    errorMessage: '',
+
+    // 日期时间
+    currentDate: '',
+    maxDate: '',
+    currentTime: '23:59'
   },
-  
-  onLoad: function () {
-    util.wxlogin(app,this.initdefault);
+
+  /**
+   * 页面加载
+   */
+  async onLoad() {
+    // 检查授权状态
+    await hybridAuthService.initialize()
+
+    const isAuthenticated = hybridAuthService.isUserAuthenticated()
+    if (!isAuthenticated) {
+      // 需要授权才能创建投票
+      const authorized = await NavigationHelper.showAuthPrompt('创建投票需要先授权')
+      if (!authorized) {
+        // 延迟返回，确保用户看到提示
+        setTimeout(() => {
+          NavigationHelper.navigateBack()
+        }, 500)
+        return
+      }
+    }
+
+    this.updateUserState()
+    this.initializeForm()
   },
-  onShow: function(){
-    
+
+  /**
+   * 页面显示
+   */
+  onShow() {
+    this.updateUserState()
   },
-  initdefault(){
-    let currDay = new Date();
-    let year = currDay.getFullYear();
-    let day = util.formatDay(currDay,"-");
-    let time = util.formatTime(currDay,":");
-    let arr1 = day.split('-');
-    year = year + 99 + "-" + arr1[1]+"-"+arr1[2];
+
+  /**
+   * 更新用户状态
+   */
+  updateUserState() {
+    const user = hybridAuthService.getCurrentUser()
+    const isAuthenticated = hybridAuthService.isUserAuthenticated()
+
     this.setData({
-      Deadline:day,
-      startDay:day,
-      endDay:year,
-      time:time,
-      show:true,
-      userId:app.globalData.userId
-    });
+      user: user,
+      isAuthenticated: isAuthenticated
+    })
   },
-  bindDateChange(e){
+
+  /**
+   * 初始化表单
+   */
+  initializeForm() {
+    const now = new Date()
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    const maxDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+
     this.setData({
-      Deadline:e.detail.value
-      
-    });
+      currentDate: this.formatDate(tomorrow),
+      maxDate: this.formatDate(maxDate),
+      endTime: this.formatDate(tomorrow),
+      loading: false
+    })
   },
-  bindTimeChange(e){
-    this.setData({
-      time:e.detail.value
-    });
+  /**
+   * 表单输入处理
+   */
+  onTitleInput(e) {
+    this.setData({ title: e.detail.value })
   },
-  chooseImage(){
-    wx.chooseImage({
-      count: 3, // 默认9
-      sizeType: ['original', 'compressed'], 
-      sourceType: ['album'], 
-      success:res =>{
-        let tempFilePaths = res.tempFilePaths;
+
+  onDescriptionInput(e) {
+    this.setData({ description: e.detail.value })
+  },
+
+  onSurveyTypeChange(e) {
+    this.setData({ surveyType: e.detail.value })
+  },
+
+  onAccessLevelChange(e) {
+    this.setData({ accessLevel: e.detail.value })
+  },
+
+  onDateChange(e) {
+    this.setData({ endTime: e.detail.value })
+  },
+
+  onTimeChange(e) {
+    this.setData({ currentTime: e.detail.value })
+  },
+
+  /**
+   * 选项输入处理
+   */
+  onOptionInput(e) {
+    const index = e.currentTarget.dataset.index
+    const value = e.detail.value
+    const options = [...this.data.options]
+
+    options[index].text = value
+    this.setData({ options })
+  },
+  /**
+   * 添加选项
+   */
+  addOption() {
+    const { options, maxOptions } = this.data
+
+    if (options.length >= maxOptions) {
+      this.showErrorMessage(`最多只能添加${maxOptions}个选项`)
+      return
+    }
+
+    const newOptions = [...options, {
+      text: '',
+      order: options.length
+    }]
+
+    this.setData({ options: newOptions })
+  },
+
+  /**
+   * 删除选项
+   */
+  deleteOption(e) {
+    const index = e.currentTarget.dataset.index
+    const { options, minOptions } = this.data
+
+    if (options.length <= minOptions) {
+      this.showErrorMessage(`至少需要${minOptions}个选项`)
+      return
+    }
+
+    const newOptions = options.filter((_, i) => i !== index)
+    // 重新排序
+    newOptions.forEach((option, i) => {
+      option.order = i
+    })
+
+    this.setData({ options: newOptions })
+  },
+
+  /**
+   * 选择封面图片
+   */
+  async chooseCoverImage() {
+    try {
+      const res = await this.chooseImage(1)
+      if (res.tempFilePaths && res.tempFilePaths.length > 0) {
         this.setData({
-          uploadImgs:tempFilePaths
-        });
+          coverImage: res.tempFilePaths[0],
+          uploading: false
+        })
       }
-    })
-  },
-  previewImage(e){
-    let imgs = this.data.uploadImgs;
-    let idx = e.currentTarget.dataset.idx;
-    wx.previewImage({
-      current: imgs[idx], // 当前显示图片的http链接
-      urls: imgs // 需要预览的图片http链接列表
-    })
-  },
-  delInput(e){
-    let arr = this.data.inputArr;
-    let min = this.data.inputMin;
-    if(arr.length > min){
-      let idx = e.currentTarget.dataset.idx;
-      arr.splice(idx,1);
-      this.setData({
-        inputArr:arr
-      });
-    }
-    
-  },
-  addInput(){
-    let arr = this.data.inputArr;
-    let max = this.data.inputMax;
-    if(arr.length < max){
-      let newIput = {};
-      this.data.inputArr.push(newIput);
-      arr = this.data.inputArr;
-      this.setData({
-        inputArr:arr
-      });
+    } catch (error) {
+      console.error('Choose image failed:', error)
+      this.showErrorMessage('选择图片失败')
     }
   },
-  formSubmit(e){
-    console.log(e.detail.value);
-    if(this.checkIsNull(e)){
-      util.setBtnLoading(this);
-      this.saveSurvey(e);
+
+  /**
+   * 预览封面图片
+   */
+  previewCoverImage() {
+    if (this.data.coverImage) {
+      wx.previewImage({
+        urls: [this.data.coverImage],
+        current: this.data.coverImage
+      })
     }
-    
-    
   },
-  saveSurvey(e){
-    let currPage = this;
-    let { title, summary, type,open,isAnonymity,date1,date2} = e.detail.value;
-    //获取对应表的名字，如果没有会新建
-    let Survey = AV.Object.extend('survey');
-    // 新建投票主题survey对象并存入对应数据
-    let survey = new Survey();
-    survey.set('title', title);
-    survey.set('summary', summary);
-    survey.set('type', type);
-    survey.set('open', open);
-    survey.set('isAnonymity', isAnonymity);
-    survey.set('date1', date1);
-    survey.set('date2', date2);
-    survey.set('owner', app.globalData.userId);
-    survey.set('voteNums', 0);//初始投票人数为0
-    survey.save().
-    then(function() {
-      currPage.saveUploadImg(survey);//存入上传的图片
-      
-    }, function(error) {
-    }).then(function(){
-      currPage.saveAnswers(e,survey);//存入所有调查主题的选项
-    });;
-    
+
+  /**
+   * 删除封面图片
+   */
+  deleteCoverImage() {
+    this.setData({ coverImage: null })
   },
-  //存入上传的图片
-  saveUploadImg(survey){
-      let imgs = this.data.uploadImgs;
-      let imgIds = [];
-      let objs = [];
-      for(let i = 0;i<imgs.length;i++){
-        let file = new AV.File('uploadImg'+i, {
-          blob: {
-            uri: imgs[i]
-          },
-        });
-        objs.push(file);
-      }
-      AV.Object.saveAll(objs).then(function(results){
-        for(let i = 0;i<results.length;i++){
-          imgIds.push(results[i].id);
+  /**
+   * 表单提交
+   */
+  async onSubmit() {
+    if (this.data.submitting) return
+
+    // 表单验证
+    const validation = this.validateForm()
+    if (!validation.valid) {
+      this.showErrorMessage(validation.message)
+      return
+    }
+
+    this.setData({ submitting: true })
+
+    try {
+      // 上传封面图片
+      let coverImageUrl = null
+      if (this.data.coverImage) {
+        const uploadResult = await this.uploadCoverImage()
+        if (uploadResult.success) {
+          coverImageUrl = uploadResult.data.fileUrl
+        } else {
+          throw new Error(uploadResult.error)
         }
-        if (imgIds)
-        survey.set('imgIds',imgIds).save();
-      });
+      }
 
-  },
-  //存入所有调查主题的选项
-  saveAnswers(e,survey){
-    let currPage = this;
-    let inputArr = this.data.inputArr;
-    let Answer = AV.Object.extend('answer');
-    let objects = [];
-    for(let i = 0;i<inputArr.length;i++){
-      //所有调查主题的选项
-      let answer = new Answer();
-      answer.set('text', e.detail.value[`answer${i}`]);
-      answer.set('sequence', i);//选项的位置，是第几个选项
-      answer.set('surveyId', survey.id);
-      objects.push(answer);
+      // 创建投票
+      const surveyResult = await this.createSurvey(coverImageUrl)
+      if (!surveyResult.success) {
+        throw new Error(surveyResult.error)
+      }
+
+      // 创建选项
+      const optionsResult = await this.createSurveyOptions(surveyResult.data.id)
+      if (!optionsResult.success) {
+        throw new Error(optionsResult.error)
+      }
+
+      // 成功提示
+      wx.showToast({
+        title: SUCCESS_MESSAGES.SURVEY.CREATE_SUCCESS,
+        icon: 'success'
+      })
+
+      // 跳转到投票详情页
+      setTimeout(() => {
+        NavigationHelper.redirectTo(`/pages/result/index?surveyId=${surveyResult.data.id}`)
+      }, 1500)
+
+    } catch (error) {
+      console.error('Create survey failed:', error)
+      this.showErrorMessage(error.message || ERROR_MESSAGES.SURVEY.CREATE_FAILED)
+    } finally {
+      this.setData({ submitting: false })
     }
-     AV.Object.saveAll(objects);
   },
-  checkIsNull(e){
-    let flag = true;
-    let values = e.detail.value;
-    if(values.title===''){
-      this.showError("投票标题不能为空！❤️");
-      return flag=false;
+  /**
+   * 上传封面图片
+   */
+  async uploadCoverImage() {
+    try {
+      this.setData({ uploading: true })
+
+      const result = await fileUploadService.uploadFile(this.data.coverImage, {
+        fileType: 'image',
+        category: 'survey-covers'
+      })
+
+      return result
+
+    } catch (error) {
+      console.error('Upload cover image failed:', error)
+      return {
+        success: false,
+        error: ERROR_MESSAGES.FILE.UPLOAD_FAILED
+      }
+    } finally {
+      this.setData({ uploading: false })
     }
-    let inputArr = this.data.inputArr;
-    for(let i = 0; i<inputArr.length;i++){
-      if(values[`answer${i}`]===''){
-        this.showError(`第${i+1}个选项描述为空，请补充！❤️`);
-        return flag=false;
+  },
+
+  /**
+   * 创建投票
+   */
+  async createSurvey(coverImageUrl) {
+    try {
+      const { title, description, surveyType, accessLevel, endTime, currentTime } = this.data
+      const user = hybridAuthService.getCurrentUser()
+
+      // 构建结束时间
+      const endDateTime = endTime && currentTime
+        ? new Date(`${endTime} ${currentTime}`).toISOString()
+        : null
+
+      const { data, error } = await supabase
+        .from('surveys')
+        .insert({
+          title: title.trim(),
+          description: description.trim() || null,
+          survey_type: surveyType,
+          access_level: accessLevel,
+          cover_image_url: coverImageUrl,
+          end_time: endDateTime,
+          creator_id: user.id,
+          app_id: APP_CONFIG.APP_ID,
+          status: 'active'
+        })
+        .select()
+        .single()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true, data }
+
+    } catch (error) {
+      console.error('Create survey failed:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
+  /**
+   * 创建投票选项
+   */
+  async createSurveyOptions(surveyId) {
+    try {
+      const { options } = this.data
+
+      // 过滤空选项并准备数据
+      const validOptions = options
+        .filter(option => option.text.trim())
+        .map((option, index) => ({
+          survey_id: surveyId,
+          option_text: option.text.trim(),
+          order_index: index,
+          vote_count: 0
+        }))
+
+      if (validOptions.length < this.data.minOptions) {
+        return {
+          success: false,
+          error: `至少需要${this.data.minOptions}个有效选项`
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('survey_options')
+        .insert(validOptions)
+        .select()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true, data }
+
+    } catch (error) {
+      console.error('Create survey options failed:', error)
+      return { success: false, error: error.message }
+    }
+  },
+  /**
+   * 表单验证
+   */
+  validateForm() {
+    const { title, options, surveyType, endTime, currentTime } = this.data
+
+    // 标题验证
+    if (!title.trim()) {
+      return { valid: false, message: '请输入投票标题' }
+    }
+
+    if (title.trim().length > 100) {
+      return { valid: false, message: '投票标题不能超过100个字符' }
+    }
+
+    // 选项验证
+    const validOptions = options.filter(option => option.text.trim())
+
+    if (validOptions.length < this.data.minOptions) {
+      return { valid: false, message: `至少需要${this.data.minOptions}个选项` }
+    }
+
+    // 检查选项是否有重复
+    const optionTexts = validOptions.map(option => option.text.trim())
+    const uniqueTexts = [...new Set(optionTexts)]
+
+    if (optionTexts.length !== uniqueTexts.length) {
+      return { valid: false, message: '选项内容不能重复' }
+    }
+
+    // 结束时间验证
+    if (endTime && currentTime) {
+      const endDateTime = new Date(`${endTime} ${currentTime}`)
+      const now = new Date()
+
+      if (endDateTime <= now) {
+        return { valid: false, message: '结束时间必须晚于当前时间' }
       }
     }
 
-    if(values.type===''){
-      this.showError("请选择投票类型！❤️");
-      return flag=false;
-    }
-    return flag;
+    return { valid: true, message: '' }
   },
-  showError(str){
+
+  /**
+   * 显示错误消息
+   */
+  showErrorMessage(message) {
     this.setData({
-      errTipShow : true,
-      errTxt:str
-    });
-    let st = setTimeout(()=>{
-      this.setData({
-       errTipShow:false,
-      });
-      clearTimeout(st);
-    },2000);
+      showError: true,
+      errorMessage: message
+    })
+
+    setTimeout(() => {
+      this.setData({ showError: false })
+    }, 3000)
   },
+
+  /**
+   * 选择图片
+   */
+  chooseImage(count = 1) {
+    return new Promise((resolve, reject) => {
+      wx.chooseImage({
+        count: count,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: resolve,
+        fail: reject
+      })
+    })
+  },
+
+  /**
+   * 格式化日期
+   */
+  formatDate(date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+
+    return `${year}-${month}-${day}`
+  },
+  /**
+   * 分享功能
+   */
   onShareAppMessage() {
-    let nickName = app.globalData.userInfo.nickName;
-    let title = `🔴${nickName}请您创建投票`;
+    const { user } = this.data
+    const nickName = user?.profile?.nickname || '朋友'
+
     return {
-      title: title,
-      // path: `/page/result?id=${surveyId}`,
-      success: function(res) {
-        // 分享成功
+      title: `${nickName}邀请您一起创建投票`,
+      path: '/pages/index/index',
+      success: (res) => {
+        console.log('Share success:', res)
       },
-      fail: function(res) {
-        // 分享失败
+      fail: (res) => {
+        console.log('Share failed:', res)
       }
     }
   }

@@ -1,8 +1,11 @@
 {
-  "navigationBarBackgroundColor": "#fff",
+  "navigationBarBackgroundColor": "#ffffff",
   "navigationBarTextStyle": "black",
   "navigationBarTitleText": "我的",
   "backgroundTextStyle": "dark",
   "backgroundColor": "#fff",
-  "enablePullDownRefresh":false
+  "enablePullDownRefresh":false,
+  "usingComponents": {
+    "skeleton": "/components/skeleton/skeleton"
+  }
 }
