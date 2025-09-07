@@ -89,7 +89,7 @@
 
 /* 投票列表 */
 .survey-list {
-  padding: 0 20rpx;
+  padding: 20rpx;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
