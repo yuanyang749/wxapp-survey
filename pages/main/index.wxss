@@ -97,6 +97,9 @@
 /* 投票列表 */
 .survey-list {
   padding: 20rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .survey-card {
@@ -106,7 +109,7 @@
   overflow: hidden;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
-  width: 100%;
+  width: 48%;
 }
 
 .survey-card:active {
