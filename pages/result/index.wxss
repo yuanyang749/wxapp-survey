@@ -178,65 +178,38 @@
 .option-item {
   display: flex;
   align-items: center;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 12rpx;
   transition: all 0.3s ease;
+  background-color: #fff;
 }
 
 .option-item.selected {
   border-color: #5f1971;
-  background-color: rgba(95, 25, 113, 0.05);
+  background-color: rgba(95, 25, 113, 0.08);
+  transform: translateY(-2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.15);
 }
 
 .option-indicator {
   margin-right: 20rpx;
   flex-shrink: 0;
-}
-
-.radio-indicator {
-  width: 40rpx;
-  height: 40rpx;
-  border: 3rpx solid #ddd;
-  border-radius: 50%;
-  position: relative;
-}
-
-.radio-indicator.checked {
-  border-color: #5f1971;
-}
-
-.radio-indicator.checked::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 20rpx;
-  height: 20rpx;
-  background-color: #5f1971;
-  border-radius: 50%;
-}
-
-.checkbox-indicator {
-  width: 40rpx;
-  height: 40rpx;
-  border: 3rpx solid #ddd;
-  border-radius: 8rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.checkbox-indicator.checked {
-  border-color: #5f1971;
-  background-color: #5f1971;
+/* 原生 radio 和 checkbox 组件样式调整 */
+radio, checkbox {
+  transform: scale(1.2);
+  margin: 0;
 }
 
-.check-icon {
-  width: 24rpx;
-  height: 24rpx;
+/* 确保原生组件在选中状态下有正确的颜色 */
+radio[checked], checkbox[checked] {
+  color: #5f1971;
 }
 
 .option-content {
@@ -258,13 +231,17 @@
   width: 100%;
   background: linear-gradient(135deg, #5f1971, #7b2d8e);
   color: #fff;
-  font-size: 36rpx;
-  font-weight: 600;
-  border-radius: 50rpx;
-  padding: 30rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 40rpx;
+  padding: 24rpx;
   border: none;
   box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .submit-btn.submitting {
@@ -313,9 +290,9 @@
 .auth-btn {
   background: linear-gradient(135deg, #5f1971, #7b2d8e);
   color: #fff;
-  font-size: 32rpx;
-  padding: 20rpx 40rpx;
-  border-radius: 30rpx;
+  font-size: 28rpx;
+  padding: 18rpx 36rpx;
+  border-radius: 25rpx;
   border: none;
   box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
 }
@@ -414,18 +391,22 @@
 /* 操作按钮 */
 .action-section {
   display: flex;
-  gap: 20rpx;
-  margin: 20rpx;
-  padding-bottom: 40rpx;
+  gap: 16rpx;
+  margin: 16rpx;
+  padding-bottom: 32rpx;
 }
 
 .action-btn {
   flex: 1;
-  padding: 24rpx;
-  border-radius: 30rpx;
-  font-size: 32rpx;
+  padding: 20rpx;
+  border-radius: 25rpx;
+  font-size: 28rpx;
   font-weight: 500;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .action-btn.primary {
