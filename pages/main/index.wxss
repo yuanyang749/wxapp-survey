@@ -86,95 +86,13 @@
   }
 }
 
-/* 用户状态栏 */
-.user-status-bar {
-  background-color: #fff;
-  padding: 20rpx 30rpx;
-  margin-bottom: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.user-avatar {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  margin-right: 20rpx;
-}
-
-.user-name {
-  font-size: 32rpx;
-  color: #333;
-  font-weight: 500;
-  margin-right: 20rpx;
-}
-
-.auth-status {
-  font-size: 24rpx;
-  color: #5f1971;
-  background-color: rgba(95, 25, 113, 0.1);
-  padding: 6rpx 12rpx;
-  border-radius: 12rpx;
-}
-
-.auth-prompt {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.prompt-content {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.prompt-icon {
-  width: 60rpx;
-  height: 60rpx;
-  margin-right: 20rpx;
-}
-
-.prompt-texts {
-  display: flex;
-  flex-direction: column;
-}
-
-.prompt-title {
-  font-size: 30rpx;
-  color: #333;
-  font-weight: 500;
-  margin-bottom: 8rpx;
-}
-
-.prompt-desc {
-  font-size: 24rpx;
-  color: #666;
-}
-
-.auth-btn {
-  background: linear-gradient(135deg, #5f1971, #7b2d8e);
-  color: #fff;
-  font-size: 26rpx;
-  padding: 16rpx 24rpx;
-  border-radius: 25rpx;
-  border: none;
-  box-shadow: 0 4rpx 12rpx rgba(95, 25, 113, 0.3);
-}
-
-.auth-btn::after {
-  border: none;
-}
 /* 投票列表 */
 .survey-list {
   padding: 0 20rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .survey-card {
@@ -184,6 +102,7 @@
   overflow: hidden;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
+  width: 48%;
 }
 
 .survey-card:active {
@@ -227,83 +146,88 @@
   height: 24rpx;
 }
 
-.survey-info {
-  padding: 30rpx;
+/* 标题覆盖层 */
+.title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 40rpx 20rpx 20rpx;
 }
 
-.survey-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #333;
-  line-height: 1.4;
-  margin-bottom: 16rpx;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.survey-desc {
+.title-overlay .survey-title {
+  color: #fff;
   font-size: 28rpx;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 20rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.3);
 }
 
-.survey-stats {
+.survey-info {
+  padding: 16rpx 20rpx;
+}
+
+.creator-section {
   display: flex;
   align-items: center;
-  gap: 30rpx;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.creator-avatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.creator-name {
+  font-size: 24rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.stats-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
+  gap: 6rpx;
 }
 
 .stat-icon {
-  width: 28rpx;
-  height: 28rpx;
-  margin-right: 8rpx;
+  width: 20rpx;
+  height: 20rpx;
 }
 
 .stat-text {
-  font-size: 26rpx;
+  font-size: 22rpx;
   color: #666;
-}
-/* 创建者信息 */
-.creator-info {
-  display: flex;
-  align-items: center;
-  padding: 20rpx 30rpx;
-  border-top: 1rpx solid #f0f0f0;
-  background-color: #fafafa;
-}
-
-.creator-avatar {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  margin-right: 16rpx;
-}
-
-.creator-name {
-  font-size: 26rpx;
-  color: #666;
-  margin-right: 20rpx;
 }
 
 .create-time {
-  font-size: 24rpx;
+  font-size: 20rpx;
   color: #999;
-  margin-left: auto;
 }
 
 /* 空状态 */
+.empty-state-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 40rpx 0;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

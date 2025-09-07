@@ -1,7 +1,7 @@
 {
   "pages":[
-    "pages/index/index",
     "pages/main/index",
+    "pages/index/index",
     "pages/mine/index",
     "pages/mySurvey/index",
     "pages/participate/index",

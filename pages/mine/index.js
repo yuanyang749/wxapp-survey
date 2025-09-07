@@ -3,10 +3,11 @@
  * 显示用户信息和投票统计
  */
 
-import hybridAuthService from '../../services/HybridAuthService.js'
-import surveyService from '../../services/SurveyService.js'
-import NavigationHelper from '../../utils/NavigationHelper.js'
-import { APP_CONFIG } from '../../config/app.js'
+import hybridAuthService from "../../services/HybridAuthService.js";
+import surveyService from "../../services/SurveyService.js";
+import NavigationHelper from "../../utils/NavigationHelper.js";
+import { APP_CONFIG } from "../../config/app.js";
+import { getDefaultAvatar } from "../../config/images.js";
 
 Page({
   data: {
@@ -19,12 +20,15 @@ Page({
       totalSurveys: 0,
       activeSurveys: 0,
       totalVotes: 0,
-      totalParticipants: 0
+      totalParticipants: 0,
     },
 
     // UI状态
     loading: true,
-    show: false
+    show: false,
+
+    // 默认图片
+    defaultAvatar: getDefaultAvatar(),
   },
 
   /**
@@ -32,32 +36,34 @@ Page({
    */
   async onLoad() {
     // 初始化认证服务
-    await hybridAuthService.initialize()
-    this.updateUserState()
+    await hybridAuthService.initialize();
+    this.updateUserState();
 
     // 如果未授权，引导授权
     if (!this.data.isAuthenticated) {
-      const authorized = await NavigationHelper.showAuthPrompt('查看个人中心需要先授权')
+      const authorized = await NavigationHelper.showAuthPrompt(
+        "查看个人中心需要先授权"
+      );
       if (!authorized) {
-        NavigationHelper.switchTab('/pages/main/index')
-        return
+        NavigationHelper.switchTab("/pages/main/index");
+        return;
       }
-      this.updateUserState()
+      this.updateUserState();
     }
 
     // 加载数据
-    await this.loadUserData()
+    await this.loadUserData();
   },
 
   /**
    * 页面显示
    */
   async onShow() {
-    this.updateUserState()
+    this.updateUserState();
 
     // 如果已授权，刷新数据
     if (this.data.isAuthenticated) {
-      await this.loadUserData()
+      await this.loadUserData();
     }
   },
 
@@ -65,34 +71,33 @@ Page({
    * 更新用户状态
    */
   updateUserState() {
-    const user = hybridAuthService.getCurrentUser()
-    const isAuthenticated = hybridAuthService.isUserAuthenticated()
+    const user = hybridAuthService.getCurrentUser();
+    const isAuthenticated = hybridAuthService.isUserAuthenticated();
 
     this.setData({
       user: user,
-      isAuthenticated: isAuthenticated
-    })
+      isAuthenticated: isAuthenticated,
+    });
   },
 
   /**
    * 加载用户数据
    */
   async loadUserData() {
-    if (!this.data.isAuthenticated) return
+    if (!this.data.isAuthenticated) return;
 
-    this.setData({ loading: true })
+    this.setData({ loading: true });
 
     try {
       // 加载用户投票统计
-      await this.loadSurveyStats()
-
+      await this.loadSurveyStats();
     } catch (error) {
-      console.error('Load user data failed:', error)
+      console.error("Load user data failed:", error);
     } finally {
       this.setData({
         loading: false,
-        show: true
-      })
+        show: true,
+      });
     }
   },
 
@@ -103,31 +108,36 @@ Page({
     try {
       const { data, error } = await surveyService.getUserSurveys({
         page: 1,
-        limit: 1000 // 获取所有投票用于统计
-      })
+        limit: 1000, // 获取所有投票用于统计
+      });
 
       if (error) {
-        console.error('Load survey stats failed:', error)
-        return
+        console.error("Load survey stats failed:", error);
+        return;
       }
 
       // 计算统计数据
-      const surveys = data || []
-      const activeSurveys = surveys.filter(s => s.status === 'active')
-      const totalVotes = surveys.reduce((sum, s) => sum + (s.total_votes || 0), 0)
-      const totalParticipants = surveys.reduce((sum, s) => sum + (s.total_participants || 0), 0)
+      const surveys = data || [];
+      const activeSurveys = surveys.filter((s) => s.status === "active");
+      const totalVotes = surveys.reduce(
+        (sum, s) => sum + (s.total_votes || 0),
+        0
+      );
+      const totalParticipants = surveys.reduce(
+        (sum, s) => sum + (s.total_participants || 0),
+        0
+      );
 
       this.setData({
         surveyStats: {
           totalSurveys: surveys.length,
           activeSurveys: activeSurveys.length,
           totalVotes: totalVotes,
-          totalParticipants: totalParticipants
-        }
-      })
-
+          totalParticipants: totalParticipants,
+        },
+      });
     } catch (error) {
-      console.error('Load survey stats failed:', error)
+      console.error("Load survey stats failed:", error);
     }
   },
 
@@ -137,10 +147,10 @@ Page({
   async navigateToMySurveys() {
     // 暂时禁用，等待Supabase版本实现
     wx.showToast({
-      title: '功能开发中，敬请期待',
-      icon: 'none',
-      duration: 2000
-    })
+      title: "功能开发中，敬请期待",
+      icon: "none",
+      duration: 2000,
+    });
     // await NavigationHelper.navigateTo('/pages/mySurvey/index')
   },
 
@@ -150,10 +160,10 @@ Page({
   async navigateToParticipation() {
     // 暂时禁用，等待Supabase版本实现
     wx.showToast({
-      title: '功能开发中，敬请期待',
-      icon: 'none',
-      duration: 2000
-    })
+      title: "功能开发中，敬请期待",
+      icon: "none",
+      duration: 2000,
+    });
     // await NavigationHelper.navigateTo('/pages/participate/index')
   },
 
@@ -161,26 +171,26 @@ Page({
    * 导航到创建投票页面
    */
   async navigateToCreate() {
-    await NavigationHelper.navigateTo('/pages/index/index')
+    await NavigationHelper.navigateTo("/pages/index/index");
   },
 
   /**
    * 导航到关于页面
    */
   async navigateToAbout() {
-    await NavigationHelper.navigateTo('/pages/about/index')
+    await NavigationHelper.navigateTo("/pages/about/index");
   },
 
   /**
    * 授权按钮点击
    */
   async onAuthorizeTap() {
-    const result = await NavigationHelper.handleAuthorization()
+    const result = await NavigationHelper.handleAuthorization();
 
     if (result.success) {
       // 授权成功后重新加载数据
-      this.updateUserState()
-      await this.loadUserData()
+      this.updateUserState();
+      await this.loadUserData();
     }
   },
 
@@ -188,18 +198,18 @@ Page({
    * 分享功能
    */
   onShareAppMessage() {
-    const { user } = this.data
-    const nickName = user?.profile?.nickname || '朋友'
+    const { user } = this.data;
+    const nickName = user?.profile?.nickname || "朋友";
 
     return {
       title: `${nickName}邀请您使用投票小程序`,
-      path: '/pages/main/index',
+      path: "/pages/main/index",
       success: (res) => {
-        console.log('Share success:', res)
+        console.log("Share success:", res);
       },
       fail: (res) => {
-        console.log('Share failed:', res)
-      }
-    }
-  }
-})
+        console.log("Share failed:", res);
+      },
+    };
+  },
+});
