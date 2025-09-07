@@ -45,7 +45,7 @@
         <view class="section-title">请选择您的选项</view>
         <view class="options-list">
           <block wx:for="{{options}}" wx:key="id" wx:for-item="option">
-            <view class="option-item {{userSelections.indexOf(option.id) > -1 ? 'selected' : ''}}" data-option-id="{{option.id}}" bindtap="onOptionSelect">
+            <view class="option-item {{userSelections.indexOf(option.id) > -1 ? 'selected' : ''}}">
               <!-- 选择指示器 -->
               <view class="option-indicator">
                 <radio wx:if="{{survey.survey_type === 'single'}}" checked="{{userSelections.indexOf(option.id) > -1}}" color="#5f1971" data-option-id="{{option.id}}" bindtap="onOptionSelect" />

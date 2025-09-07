@@ -203,6 +203,9 @@ Page({
    * 选项选择处理
    */
   onOptionSelect(e) {
+    // 阻止事件冒泡，防止重复触发
+    e.stopPropagation();
+
     if (!this.data.canParticipate) {
       if (!this.data.isAuthenticated) {
         NavigationHelper.showAuthPrompt("参与投票需要先授权");
