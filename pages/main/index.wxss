@@ -2,6 +2,13 @@
 .page {
   background-color: #f5f5f5;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-scroll-view {
+  flex: 1;
+  height: 100vh;
 }
 
 /* 加载状态 */
@@ -90,9 +97,6 @@
 /* 投票列表 */
 .survey-list {
   padding: 20rpx;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
 }
 
 .survey-card {
@@ -102,7 +106,7 @@
   overflow: hidden;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
-  width: 48%;
+  width: 100%;
 }
 
 .survey-card:active {
@@ -434,3 +438,4 @@
   font-weight: 600;
   box-sizing: border-box;
 }
+

@@ -12,7 +12,7 @@
     <skeleton type="card" show="{{true}}" rows="{{3}}" animated="{{true}}"></skeleton>
   </view>
   <!-- 主要内容 -->
-  <scroll-view wx:else scroll-y style="height:100vh" bindscroll="onScroll" scroll-with-animation='true' enable-back-to-top='true' scroll-top='{{scrollTop}}' bindscrolltolower="onReachBottom">
+  <scroll-view wx:else scroll-y class="main-scroll-view" bindscroll="onScroll" scroll-with-animation='true' enable-back-to-top='true' scroll-top='{{scrollTop}}' bindscrolltolower="onReachBottom">
     <!-- 轮播图 -->
     <swiper wx:if="{{bannerUrls.length > 0}}" indicator-dots="{{indicatorDots}}" autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
       <block wx:for="{{bannerUrls}}" wx:for-index="idx">
