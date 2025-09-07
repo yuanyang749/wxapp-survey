@@ -1,6 +1,6 @@
 {
   "libVersion": "3.9.2",
-  "projectname": "wxapp-survey",
+  "projectname": "%E6%8A%95%E7%A5%A8%E5%B0%8F%E7%A8%8B%E5%BA%8F",
   "setting": {
     "urlCheck": false,
     "coverView": true,
@@ -10,6 +10,13 @@
     "autoAudits": false,
     "showShadowRootInWxmlPanel": true,
     "compileHotReLoad": true,
-    "bigPackageSizeSupport": true
+    "bigPackageSizeSupport": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "useStaticServer": false,
+    "useLanDebug": false,
+    "showES6CompileOption": false,
+    "checkInvalidKey": true,
+    "ignoreDevUnusedFiles": true
   }
 }
